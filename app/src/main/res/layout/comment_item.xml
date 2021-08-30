@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginStart="10dp"
+    android:layout_marginEnd="10dp"
+    android:layout_marginTop="15dp"
+    android:orientation="horizontal"
+    android:weightSum="100"
+    android:backgroundTint="@color/gColor4"
+    android:background="@drawable/comment_bg"
+    android:id="@+id/comment_container">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="97"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/poster_details"
+            android:layout_gravity="top"
+            android:textSize="12sp"
+            android:layout_marginTop="5dp"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:textColor="#173797"
+            android:layout_marginStart="10dp"
+            android:fontFamily="sans-serif-medium"
+            android:layout_height="wrap_content"
+            android:text="@string/user_s_name_and_last_name"/>
+
+        <TextView
+            android:id="@+id/poster_email"
+            android:layout_gravity="top"
+            android:textSize="12sp"
+            android:layout_marginTop="5dp"
+            android:layout_width="wrap_content"
+            android:textColor="#173797"
+            android:layout_marginStart="10dp"
+            android:fontFamily="sans-serif-condensed-light"
+            android:layout_height="wrap_content"
+            android:text="@string/stefan_kjoropanovski_gmail_com"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            app:cardUseCompatPadding="true"
+            app:cardBackgroundColor="#D9DFE1"
+            app:cardCornerRadius="5dp">
+
+            <TextView
+                android:id="@+id/comment_content"
+                android:gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:textColor="@color/black"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginBottom="2dp"
+                android:text="@string/longDet"/>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:id="@+id/sent_at"
+            android:layout_gravity="bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-smallcaps"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="5dp"
+            android:text="@string/sent_at_01_01_2000"/>
+
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginStart="10dp"
+        android:src="@drawable/person"
+        android:elevation="20dp"
+        android:id="@+id/comment_icon"
+        android:layout_gravity="center"/>
+
+</LinearLayout>

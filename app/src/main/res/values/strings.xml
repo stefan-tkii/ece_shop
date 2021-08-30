@@ -1,0 +1,84 @@
+<resources>
+    <string name="app_name">ECE Shop</string>
+    <string name="splash_screen_image_text">Splash screen image</string>
+    <string name="ece_shop_label">ECE Shop</string>
+    <string name="sublabel_splashscreen">A pristine shopping experience</string>
+    <string name="buy_whatever_with_ece_shop">Buy whatever with ECE shop</string>
+    <string name="already_have_an_account_login">Already have an account? Login</string>
+    <string name="create_an_account">Create an account</string>
+    <string name="welcome_to_ece_shop">Welcome to ECE shop!</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="remember_me">Remember me</string>
+    <string name="enter_your_email">Enter your email</string>
+    <string name="enter_your_password">Enter your password</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="enter_your_full_name">Enter your full name</string>
+    <string name="enter_your_phone_number">Enter your phone number</string>
+    <string name="register">Register</string>
+    <string name="phone_number">Phone number</string>
+    <string name="close">Close</string>
+    <string name="center_dialog_text">Center dialog text</string>
+    <string name="error">Error</string>
+    <string name="loading">Loading...</string>
+    <string name="welcome_to_the_home_page">Welcome to the home page!</string>
+    <string name="facebook_app_id">229528329173745</string>
+    <string name="fb_login_protocol_scheme">fb229528329173745</string>
+    <string name="reset_password">Reset password</string>
+    <string name="dashboard_fragment">Dashboard fragment</string>
+    <string name="welcome_dash">Welcome</string>
+    <string name="name_placeholder">Name placeholder</string>
+    <string name="notifications">Notifications</string>
+    <string name="all">All</string>
+    <string name="categories">Category</string>
+    <string name="search_for_a_product">Search for a product</string>
+    <string name="categories_text">Categories</string>
+    <string name="clothes">Clothes</string>
+    <string name="product_name">Product name</string>
+    <string name="product_description">Product description</string>
+    <string name="product_price">Product price</string>
+    <string name="product_orders">Product orders</string>
+    <string name="products">Products</string>
+    <string name="sort_by">Sort by</string>
+    <string name="latest">Latest</string>
+    <string name="search">Search</string>
+    <string name="queryHint">Search for a product</string>
+    <string name="welcome_to_the_new_activity">Welcome to the new activity!</string>
+    <string name="comments">Comments</string>
+    <string name="add_to_cart">ADD TO CART</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
+    <string name="in_stock">In stock:</string>
+    <string name="write_a_comment">Write a comment</string>
+    <string name="post">Post</string>
+    <string name="user_s_name_and_last_name">Users name and last name</string>
+    <string name="sent_at_01_01_2000">Posted at: 01/01/2000</string>
+    <string name="longDet">Comment detailsdfghbjnkmjnhbfdxsfxgvhbjnkmjnhbgfvdxsxfghbjnkmnhbgfvdxsxfgvhbjnkmjnhbgfvxdsxfchbnm,njbhgvfxdchnbjmk,.mnjhbgvfchbnm, nbjhgvf</string>
+    <string name="stefan_kjoropanovski_gmail_com">stefan.kjoropanovski@gmail.com</string>
+    <string name="there_are_no_comments_to_show_for_this_product">There are no comments to show for this product.</string>
+
+    <string-array name="categories">
+        <item>All</item>
+        <item>Clothes</item>
+        <item>Accessories</item>
+        <item>Hardware</item>
+        <item>Devices</item>
+        <item>Miscellaneous</item>
+    </string-array>
+
+    <string-array name="sorts">
+        <item>Latest</item>
+        <item>Oldest</item>
+        <item>Price ascending</item>
+        <item>Price descending</item>
+        <item>Orders</item>
+    </string-array>
+
+    <string-array name="sortsComments">
+        <item>Latest</item>
+        <item>Oldest</item>
+    </string-array>
+
+</resources>

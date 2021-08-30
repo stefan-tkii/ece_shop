@@ -1,0 +1,804 @@
+package com.example.eceshop;
+
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.ProgressBar;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
+import androidx.core.widget.NestedScrollView;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.example.eceshop.DynamicRvInterface.LoadMore;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
+import javax.security.auth.login.LoginException;
+
+import dmax.dialog.SpotsDialog;
+import maes.tech.intentanim.CustomIntent;
+
+public class DashboardFragment extends Fragment implements CategoryRecyclerViewAdapter.OnItemClickListener, ProductRecyclerViewAdapter.OnProductClickListener
+{
+
+    private DashboardFragmentTouchListener listener;
+
+    private FloatingActionButton backToTop;
+
+    private NestedScrollView dashboardContainer;
+    private ArrayAdapter<String> arrayAdapterSort;
+    private AutoCompleteTextView productSorter;
+
+    private RecyclerView categoryRecyclerView;
+    private CategoryRecyclerViewAdapter categoryAdapter;
+
+    private RecyclerView productRecyclerView;
+    private ArrayList<ProductRecyclerViewModel> productItems;
+    private ProductRecyclerViewAdapter productAdapter;
+
+    private AlertDialog progressDialog;
+    private ProgressBar itemBar;
+
+    private String nextKey;
+    private Double nextPrice;
+    private boolean loadMore;
+    private String sortBy;
+    private String searchQuery;
+    private String categorySort;
+
+    private String[] categoryTitles;
+    private Drawable[] categoryIcons;
+
+    private static final String CLICKED_KEY = "com.example.eceshop.CLICKED_PRODUCT";
+
+    @SuppressLint("ClickableViewAccessibility")
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
+        ViewGroup root = (ViewGroup) inflater.inflate(R.layout.dashboard_fragment, container, false);
+
+        loadMore = true;
+        nextKey = null;
+        nextPrice = 0.0d;
+        sortBy = "Latest";
+        categorySort = "";
+
+        Log.e("HU", "Inside onCreateView of DashboardFragment");
+
+        dashboardContainer = root.findViewById(R.id.dashboard_container);
+        productSorter = root.findViewById(R.id.sort_selector);
+
+        backToTop = root.findViewById(R.id.backToTopFab);
+        itemBar = root.findViewById(R.id.item_load_bar);
+
+        categoryTitles = loadCategoryTitles();
+        categoryIcons = loadCategoryIcons();
+
+        categoryRecyclerView = root.findViewById(R.id.top_recycler);
+
+        categoryAdapter = new CategoryRecyclerViewAdapter(Arrays.asList(
+                createCategoryFor(0),
+                createCategoryFor(1),
+                createCategoryFor(2),
+                createCategoryFor(3),
+                createCategoryFor(4),
+                createCategoryFor(5),
+                createCategoryFor(6),
+                createCategoryFor(7)
+        ));
+
+        categoryAdapter.setOnItemClickListener(this);
+        categoryRecyclerView.setLayoutManager(new LinearLayoutManager(getActivityNonNull(), LinearLayoutManager.HORIZONTAL, false));
+        categoryRecyclerView.setAdapter(categoryAdapter);
+
+        progressDialog = new SpotsDialog.Builder()
+                .setContext(getActivityNonNull())
+                .setCancelable(false).setTheme(R.style.CustomProgressDialog)
+                .build();
+
+        productRecyclerView = root.findViewById(R.id.bottom_recycler);
+        productItems = new ArrayList<>();
+
+        productRecyclerView.setLayoutManager(new LinearLayoutManager(getActivityNonNull()));
+        productAdapter = new ProductRecyclerViewAdapter(getActivityNonNull(), productItems);
+        productAdapter.setOnProductClickListener(this);
+        productRecyclerView.setAdapter(productAdapter);
+
+        dashboardContainer.setOnTouchListener(new View.OnTouchListener()
+        {
+            @SuppressLint("ClickableViewAccessibility")
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                listener.onDashboardFragmentTouch();
+                InputMethodManager imm = (InputMethodManager) getActivityNonNull().getSystemService(Context.INPUT_METHOD_SERVICE);
+                View focusedView = getActivityNonNull().getCurrentFocus();
+                if (focusedView != null)
+                {
+                    imm.hideSoftInputFromWindow(getActivityNonNull().getCurrentFocus().getWindowToken(), 0);
+                    if(productSorter.isFocused())
+                    {
+                        productSorter.clearFocus();
+                    }
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        });
+
+        backToTop.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                dashboardContainer.smoothScrollTo(0,0);
+            }
+        });
+
+        dashboardContainer.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener()
+        {
+            @Override
+            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
+            {
+                if (scrollY > oldScrollY)
+                {
+                    new Handler().postDelayed(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            backToTop.setVisibility(View.GONE);
+                        }
+                    }, 2000);
+                }
+                if (scrollY < oldScrollY)
+                {
+                    backToTop.setVisibility(View.VISIBLE);
+                }
+                if (scrollY == 0)
+                {
+                    backToTop.setVisibility(View.GONE);
+                }
+                if(scrollY == (v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight()))
+                {
+                    Log.e("TUG", "At bottom of screen scrolled.");
+                    if(loadMore)
+                    {
+                        Log.e("TUG", "Going to load more.");
+                        backToTop.setVisibility(View.VISIBLE);
+                        itemBar.setVisibility(View.VISIBLE);
+                        getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                    }
+                    else
+                    {
+                        Log.e("TUG", "Will not load more.");
+                        backToTop.setVisibility(View.VISIBLE);
+                    }
+                }
+            }
+        });
+
+        Bundle bundle = this.getArguments();
+        if(bundle != null)
+        {
+            searchQuery = bundle.getString("searchInput");
+            itemBar.setVisibility(View.VISIBLE);
+            if(searchQuery.equals(""))
+            {
+                Toast.makeText(getActivityNonNull(), "Back to displaying all products.", Toast.LENGTH_SHORT).show();
+                getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+            }
+            else
+            {
+                Toast.makeText(getActivityNonNull(), "Displaying results for: " + searchQuery, Toast.LENGTH_SHORT).show();
+                getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+            }
+        }
+        else
+        {
+            searchQuery = "";
+            getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+        }
+
+        return root;
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        Log.e("HU", "Inside onResume of DashboardFragment");
+
+        String[] sortOptions = getResources().getStringArray(R.array.sorts);
+        arrayAdapterSort = new ArrayAdapter<>(getContext(), R.layout.category_dropdown_item, sortOptions);
+        productSorter.setAdapter(arrayAdapterSort);
+
+        productSorter.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                String item = arrayAdapterSort.getItem(position);
+                productSorter.clearFocus();
+                if(!sortBy.equals(item))
+                {
+                    sortBy = item;
+                    productItems.clear();
+                    productAdapter.notifyDataSetChanged();
+                    loadMore = true;
+                    itemBar.setVisibility(View.VISIBLE);
+                    nextPrice = 0.0d;
+                    nextKey = null;
+                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                }
+                else
+                {
+                    Toast.makeText(getActivityNonNull(), "Already displaying products in this order.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        if(context instanceof DashboardFragmentTouchListener)
+        {
+            listener = (DashboardFragmentTouchListener) context;
+        }
+        else
+        {
+            throw  new RuntimeException(context.toString() + " must implement the DashboardFragmentTouchListener.");
+        }
+    }
+
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
+        listener = null;
+    }
+
+    protected FragmentActivity getActivityNonNull()
+    {
+        if (super.getActivity() != null)
+        {
+            return super.getActivity();
+        }
+        else {
+            throw new RuntimeException("null returned from getActivity()");
+        }
+    }
+
+    private String[] loadCategoryTitles()
+    {
+        return getResources().getStringArray(R.array.category_titles);
+    }
+
+    private Drawable[] loadCategoryIcons()
+    {
+        TypedArray ta = getResources().obtainTypedArray(R.array.category_drawables);
+        Drawable[] icons = new Drawable[ta.length()];
+        for(int i=0;i<ta.length();i++)
+        {
+            int id = ta.getResourceId(i, 0);
+            if(id != 0)
+            {
+                icons[i] = ContextCompat.getDrawable(getActivityNonNull(), id);
+            }
+        }
+        ta.recycle();
+        return icons;
+    }
+
+    private CategoryRecyclerViewModel createCategoryFor(int position)
+    {
+        return new CategoryRecyclerViewModel(categoryIcons[position], categoryTitles[position]);
+    }
+
+    @Override
+    public void OnItemClick(int position, String data)
+    {
+        if(position == RecyclerView.NO_POSITION)
+        {
+            categorySort = "";
+            nextKey = null;
+            nextPrice = 0.0d;
+            productItems.clear();
+            loadMore = true;
+            itemBar.setVisibility(View.VISIBLE);
+            productAdapter.notifyDataSetChanged();
+            getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+        }
+        else
+        {
+            categorySort = data;
+            nextKey = null;
+            nextPrice = 0.0d;
+            loadMore = true;
+            productItems.clear();
+            itemBar.setVisibility(View.VISIBLE);
+            productAdapter.notifyDataSetChanged();
+            getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+        }
+    }
+
+    @Override
+    public void OnProductClick(int position, ProductRecyclerViewModel data)
+    {
+        Intent intent = new Intent(getActivityNonNull(), ProductDetailsActivity.class);
+        intent.putExtra(CLICKED_KEY, data);
+        startActivity(intent);
+        CustomIntent.customType(getActivityNonNull(), "left-to-right");
+    }
+
+    public interface DashboardFragmentTouchListener
+    {
+        void onDashboardFragmentTouch();
+    }
+
+    private void getProducts(String optionSort, String newId, Double newPrice, String searchBy, String category)
+    {
+        Query mDatabase = getProductsQuery(optionSort, newId, newPrice);
+        if(mDatabase == null)
+        {
+            itemBar.setVisibility(View.GONE);
+            Toast.makeText(getActivityNonNull(), "Not implemented yet.", Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            if(optionSort.equals("Latest"))
+            {
+                ValueEventListener valueListener = new ValueEventListener()
+                {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot)
+                    {
+                        if(snapshot.exists())
+                        {
+                            boolean added = false;
+                            for(DataSnapshot dataSnapshot : snapshot.getChildren())
+                            {
+                                ProductRecyclerViewModel item = dataSnapshot.getValue(ProductRecyclerViewModel.class);
+                                if(searchBy.equals("") && category.equals(""))
+                                {
+                                    productItems.add(item);
+                                }
+                                else if((!searchBy.equals("")) && category.equals(""))
+                                {
+                                    String name = dataSnapshot.child("name").getValue(String.class);
+                                    if(Pattern.compile(Pattern.quote(searchBy), Pattern.CASE_INSENSITIVE).matcher(name).find())
+                                    {
+                                        productItems.add(item);
+                                        added = true;
+                                    }
+                                }
+                                else if(searchBy.equals("") && (!category.equals("")))
+                                {
+                                    String categoryId = dataSnapshot.child("categoryId").getValue(String.class);
+                                    if(categoryId.equals(category))
+                                    {
+                                        productItems.add(item);
+                                        added = true;
+                                    }
+                                }
+                                else if((!searchBy.equals("")) && (!category.equals("")))
+                                {
+                                    String name = dataSnapshot.child("name").getValue(String.class);
+                                    String categoryId = dataSnapshot.child("categoryId").getValue(String.class);
+                                    if(Pattern.compile(Pattern.quote(searchBy), Pattern.CASE_INSENSITIVE).matcher(name).find() && categoryId.equals(category))
+                                    {
+                                        productItems.add(item);
+                                        added = true;
+                                    }
+                                }
+                                nextKey = dataSnapshot.getKey();
+                            }
+                            if(added)
+                            {
+                                itemBar.setVisibility(View.GONE);
+                                productAdapter.notifyDataSetChanged();
+                            }
+                            else
+                            {
+                                if(searchBy.equals("") && category.equals(""))
+                                {
+                                    itemBar.setVisibility(View.GONE);
+                                    productAdapter.notifyDataSetChanged();
+                                }
+                                else
+                                {
+                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            itemBar.setVisibility(View.GONE);
+                            loadMore = false;
+                            productAdapter.notifyDataSetChanged();
+                            Toast.makeText(getActivityNonNull(), "No more products left to display.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error)
+                    {
+                        itemBar.setVisibility(View.GONE);
+                        CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
+                        dialog.show();
+                    }
+                };
+                mDatabase.addListenerForSingleValueEvent(valueListener);
+            }
+            else if(optionSort.equals("Oldest"))
+            {
+                ValueEventListener valueListener = new ValueEventListener()
+                {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot)
+                    {
+                        if(snapshot.exists())
+                        {
+                            boolean added = false;
+                            ArrayList<ProductRecyclerViewModel> sorter = new ArrayList<>();
+                            boolean flag = true;
+                            for(DataSnapshot dataSnapshot : snapshot.getChildren())
+                            {
+                                ProductRecyclerViewModel item = dataSnapshot.getValue(ProductRecyclerViewModel.class);
+                                sorter.add(item);
+                                if(flag)
+                                {
+                                    nextKey = dataSnapshot.getKey();
+                                    flag = false;
+                                }
+                            }
+                            Collections.reverse(sorter);
+                            for(ProductRecyclerViewModel m : sorter)
+                            {
+                                if(searchBy.equals("") && category.equals(""))
+                                {
+                                    productItems.add(m);
+                                }
+                                else if((!searchBy.equals("")) && category.equals(""))
+                                {
+                                    String name = m.getName();
+                                    if(Pattern.compile(Pattern.quote(searchBy), Pattern.CASE_INSENSITIVE).matcher(name).find())
+                                    {
+                                        productItems.add(m);
+                                        added = true;
+                                    }
+                                }
+                                else if(searchBy.equals("") && (!category.equals("")))
+                                {
+                                    String categoryId = m.getCategoryId();
+                                    if(categoryId.equals(category))
+                                    {
+                                        productItems.add(m);
+                                        added = true;
+                                    }
+                                }
+                                else if((!searchBy.equals("")) && (!category.equals("")))
+                                {
+                                    String name = m.getName();
+                                    String categoryId = m.getCategoryId();
+                                    if(Pattern.compile(Pattern.quote(searchBy), Pattern.CASE_INSENSITIVE).matcher(name).find() && categoryId.equals(category))
+                                    {
+                                        productItems.add(m);
+                                        added = true;
+                                    }
+                                }
+                            }
+                            if(added)
+                            {
+                                itemBar.setVisibility(View.GONE);
+                                productAdapter.notifyDataSetChanged();
+                            }
+                            else
+                            {
+                                if(searchBy.equals("") && category.equals(""))
+                                {
+                                    itemBar.setVisibility(View.GONE);
+                                    productAdapter.notifyDataSetChanged();
+                                }
+                                else
+                                {
+                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            itemBar.setVisibility(View.GONE);
+                            loadMore = false;
+                            productAdapter.notifyDataSetChanged();
+                            Toast.makeText(getActivityNonNull(), "No more products left to display.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error)
+                    {
+                        itemBar.setVisibility(View.GONE);
+                        CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
+                        dialog.show();
+                    }
+                };
+                mDatabase.addListenerForSingleValueEvent(valueListener);
+            }
+            else if(optionSort.equals("Price ascending"))
+            {
+                ValueEventListener valueListener = new ValueEventListener()
+                {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot)
+                    {
+                        if(snapshot.exists())
+                        {
+                            boolean added = false;
+                            for(DataSnapshot dataSnapshot : snapshot.getChildren())
+                            {
+                                ProductRecyclerViewModel item = dataSnapshot.getValue(ProductRecyclerViewModel.class);
+                                if(searchBy.equals("") && category.equals(""))
+                                {
+                                    productItems.add(item);
+                                }
+                                else if((!searchBy.equals("")) && category.equals(""))
+                                {
+                                    String name = dataSnapshot.child("name").getValue(String.class);
+                                    if(Pattern.compile(Pattern.quote(searchBy), Pattern.CASE_INSENSITIVE).matcher(name).find())
+                                    {
+                                        productItems.add(item);
+                                        added = true;
+                                    }
+                                }
+                                else if(searchBy.equals("") && (!category.equals("")))
+                                {
+                                    String categoryId = dataSnapshot.child("categoryId").getValue(String.class);
+                                    if(categoryId.equals(category))
+                                    {
+                                        productItems.add(item);
+                                        added = true;
+                                    }
+                                }
+                                else if((!searchBy.equals("")) && (!category.equals("")))
+                                {
+                                    String name = dataSnapshot.child("name").getValue(String.class);
+                                    String categoryId = dataSnapshot.child("categoryId").getValue(String.class);
+                                    if(Pattern.compile(Pattern.quote(searchBy), Pattern.CASE_INSENSITIVE).matcher(name).find() && categoryId.equals(category))
+                                    {
+                                        productItems.add(item);
+                                        added = true;
+                                    }
+                                }
+                                nextPrice = dataSnapshot.child("price").getValue(Double.class);
+                                nextKey = dataSnapshot.getKey();
+                            }
+                            if(added)
+                            {
+                                itemBar.setVisibility(View.GONE);
+                                productAdapter.notifyDataSetChanged();
+                            }
+                            else
+                            {
+                                if(searchBy.equals("") && category.equals(""))
+                                {
+                                    itemBar.setVisibility(View.GONE);
+                                    productAdapter.notifyDataSetChanged();
+                                }
+                                else
+                                {
+                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            itemBar.setVisibility(View.GONE);
+                            loadMore = false;
+                            productAdapter.notifyDataSetChanged();
+                            Toast.makeText(getActivityNonNull(), "No more products left to display.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error)
+                    {
+                        itemBar.setVisibility(View.GONE);
+                        CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
+                        dialog.show();
+                    }
+                };
+                mDatabase.addListenerForSingleValueEvent(valueListener);
+            }
+            else if(optionSort.equals("Price descending"))
+            {
+                ValueEventListener valueListener = new ValueEventListener()
+                {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot)
+                    {
+                        if(snapshot.exists())
+                        {
+                            boolean added = false;
+                            ArrayList<ProductRecyclerViewModel> sorter = new ArrayList<>();
+                            boolean flag = true;
+                            for(DataSnapshot dataSnapshot : snapshot.getChildren())
+                            {
+                                ProductRecyclerViewModel item = dataSnapshot.getValue(ProductRecyclerViewModel.class);
+                                sorter.add(item);
+                                if(flag)
+                                {
+                                    nextPrice = dataSnapshot.child("price").getValue(Double.class);
+                                    nextKey = dataSnapshot.getKey();
+                                    flag = false;
+                                }
+                            }
+                            Collections.reverse(sorter);
+                            for(ProductRecyclerViewModel m : sorter)
+                            {
+                                if(searchBy.equals("") && category.equals(""))
+                                {
+                                    productItems.add(m);
+                                }
+                                else if((!searchBy.equals("")) && category.equals(""))
+                                {
+                                    String name = m.getName();
+                                    if(Pattern.compile(Pattern.quote(searchBy), Pattern.CASE_INSENSITIVE).matcher(name).find())
+                                    {
+                                        productItems.add(m);
+                                        added = true;
+                                    }
+                                }
+                                else if(searchBy.equals("") && (!category.equals("")))
+                                {
+                                    String categoryId = m.getCategoryId();
+                                    if(categoryId.equals(category))
+                                    {
+                                        productItems.add(m);
+                                        added = true;
+                                    }
+                                }
+                                else if((!searchBy.equals("")) && (!category.equals("")))
+                                {
+                                    String name = m.getName();
+                                    String categoryId = m.getCategoryId();
+                                    if(Pattern.compile(Pattern.quote(searchBy), Pattern.CASE_INSENSITIVE).matcher(name).find() && categoryId.equals(category))
+                                    {
+                                        productItems.add(m);
+                                        added = true;
+                                    }
+                                }
+                            }
+                            if(added)
+                            {
+                                itemBar.setVisibility(View.GONE);
+                                productAdapter.notifyDataSetChanged();
+                            }
+                            else
+                            {
+                                if(searchBy.equals("") && category.equals(""))
+                                {
+                                    itemBar.setVisibility(View.GONE);
+                                    productAdapter.notifyDataSetChanged();
+                                }
+                                else
+                                {
+                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            itemBar.setVisibility(View.GONE);
+                            loadMore = false;
+                            productAdapter.notifyDataSetChanged();
+                            Toast.makeText(getActivityNonNull(), "No more products left to display.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error)
+                    {
+                        itemBar.setVisibility(View.GONE);
+                        CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
+                        dialog.show();
+                    }
+                };
+                mDatabase.addListenerForSingleValueEvent(valueListener);
+            }
+        }
+    }
+
+    private Query getProductsQuery(String optionSort, String newId, Double newPrice)
+    {
+        FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
+        DatabaseReference ref = db.getReference("Products");
+        if(optionSort.equals("Latest"))
+        {
+            if(newId == null)
+            {
+                return db.getReference("Products").orderByKey().limitToFirst(3);
+            }
+            return db.getReference("Products").orderByKey().startAfter(newId).limitToFirst(3);
+        }
+        else if(optionSort.equals("Oldest"))
+        {
+            if(newId == null)
+            {
+                return db.getReference("Products").orderByKey().limitToLast(3);
+            }
+            return db.getReference("Products").orderByKey().endBefore(newId).limitToLast(3);
+        }
+        else if(optionSort.equals("Price ascending"))
+        {
+            if(newPrice == 0.0d)
+            {
+                return db.getReference("Products").orderByChild("price").limitToFirst(3);
+            }
+            return db.getReference("Products").orderByChild("price").startAfter(newPrice, newId).limitToFirst(3);
+        }
+        else if(optionSort.equals("Price descending"))
+        {
+            if(newPrice == 0.0d)
+            {
+                return db.getReference("Products").orderByChild("price").limitToLast(3);
+            }
+            return db.getReference("Products").orderByChild("price").endBefore(newPrice, newId).limitToLast(3);
+        }
+        else if(optionSort.equals("Orders"))
+        {
+            return null;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+}

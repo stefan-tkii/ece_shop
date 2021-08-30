@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="id_activityScreenTitles">
+        <item></item>
+        <item>Home</item>
+        <item>Cart</item>
+        <item>Orders</item>
+        <item>Profile</item>
+        <item>Settings</item>
+        <item/>
+        <item>Logout</item>
+    </string-array>
+
+    <array name="id_activityScreenIcons">
+        <item>@drawable/ic_close</item>
+        <item>@drawable/ic_home</item>
+        <item>@drawable/ic_cart</item>
+        <item>@drawable/ic_orders</item>
+        <item>@drawable/ic_profile</item>
+        <item>@drawable/ic_settings</item>
+        <item>0</item>
+        <item>@drawable/ic_logout</item>
+    </array>
+
+    <string-array name="category_titles">
+        <item>Clothes</item>
+        <item>Hardware</item>
+        <item>Devices</item>
+        <item>Books</item>
+        <item>Supplements</item>
+        <item>Accessories</item>
+        <item>Jewelry</item>
+        <item>Miscellaneous</item>
+    </string-array>
+
+    <array name="category_drawables">
+        <item>@drawable/cloth_img</item>
+        <item>@drawable/hardware_img</item>
+        <item>@drawable/device_img</item>
+        <item>@drawable/book_img</item>
+        <item>@drawable/supplement_img</item>
+        <item>@drawable/accessory_img</item>
+        <item>@drawable/jewelry_img</item>
+        <item>@drawable/miscellaneous_img</item>
+    </array>
+
+</resources>

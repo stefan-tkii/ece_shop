@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "197668008063",
+    "firebase_url": "https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "ece-shop",
+    "storage_bucket": "ece-shop.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:197668008063:android:a628f892ce57a0bf500f4a",
+        "android_client_info": {
+          "package_name": "com.example.eceshop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "197668008063-13ahbt53goi5s4qnvab7p7tr7g1tm2ba.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.eceshop",
+            "certificate_hash": "f9ccd26757c3b7b8fa0ede0371b3fda2ee4b84e4"
+          }
+        },
+        {
+          "client_id": "197668008063-lhuc6e4ui7dmqsinl7utgkf0foejkshb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.eceshop",
+            "certificate_hash": "06729d1c9d2a28e86282602be13a6fb4f7a2f209"
+          }
+        },
+        {
+          "client_id": "197668008063-llg0s0ei5ihii8fqo571ejfc3ea5232g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCl-dDafReyeVYHoP1cua0tBrAABYh4mLM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "197668008063-llg0s0ei5ihii8fqo571ejfc3ea5232g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
