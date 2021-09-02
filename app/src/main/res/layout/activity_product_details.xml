@@ -370,6 +370,12 @@
                     android:id="@+id/comments_recyclerView"
                     android:nestedScrollingEnabled="false"/>
 
+                <ProgressBar
+                    android:id="@+id/details_item_load_bar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:indeterminateDrawable="@drawable/dynamic_bar_style"/>
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

@@ -58,6 +58,12 @@
     <string name="longDet">Comment detailsdfghbjnkmjnhbfdxsfxgvhbjnkmjnhbgfvdxsxfghbjnkmnhbgfvdxsxfgvhbjnkmjnhbgfvxdsxfchbnm,njbhgvfxdchnbjmk,.mnjhbgvfchbnm, nbjhgvf</string>
     <string name="stefan_kjoropanovski_gmail_com">stefan.kjoropanovski@gmail.com</string>
     <string name="there_are_no_comments_to_show_for_this_product">There are no comments to show for this product.</string>
+    <string name="products_in_cart">Products in cart</string>
+    <string name="cannot_display_any_products_your_cart_is_empty">Cannot display any products, your cart is empty.</string>
+    <string name="orders_20">Orders: 20</string>
+    <string name="remove_from_cart">Remove from cart</string>
+    <string name="order_now">Order now</string>
+    <string name="remove">Remove</string>
 
     <string-array name="categories">
         <item>All</item>

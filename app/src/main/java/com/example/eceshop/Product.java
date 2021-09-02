@@ -3,9 +3,9 @@ package com.example.eceshop;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class ProductRecyclerViewModel implements Parcelable
+public class Product implements Parcelable
 {
-
+    private String productId;
     private String name;
     private String shortDesc;
     private String longDesc;
@@ -15,13 +15,14 @@ public class ProductRecyclerViewModel implements Parcelable
     private String categoryId;
     private int inStock;
 
-    public ProductRecyclerViewModel()
+    public Product()
     {
 
     }
 
-    public ProductRecyclerViewModel(String name, String shortDesc, String longDesc, String imgUri, Double price, String orders, String categoryId, int inStock)
+    public Product(String productId, String name, String shortDesc, String longDesc, String imgUri, Double price, String orders, String categoryId, int inStock)
     {
+        this.productId = productId;
         this.name = name;
         this.shortDesc = shortDesc;
         this.longDesc = longDesc;
@@ -32,8 +33,9 @@ public class ProductRecyclerViewModel implements Parcelable
         this.inStock = inStock;
     }
 
-    protected ProductRecyclerViewModel(Parcel in)
+    protected Product(Parcel in)
     {
+        productId = in.readString();
         name = in.readString();
         shortDesc = in.readString();
         longDesc = in.readString();
@@ -50,46 +52,30 @@ public class ProductRecyclerViewModel implements Parcelable
         inStock = in.readInt();
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags)
-    {
-        dest.writeString(name);
-        dest.writeString(shortDesc);
-        dest.writeString(longDesc);
-        dest.writeString(imgUri);
-        if (price == null)
-        {
-            dest.writeByte((byte) 0);
-        }
-        else {
-            dest.writeByte((byte) 1);
-            dest.writeDouble(price);
-        }
-        dest.writeString(orders);
-        dest.writeString(categoryId);
-        dest.writeInt(inStock);
-    }
-
-    @Override
-    public int describeContents()
-    {
-        return 0;
-    }
-
-    public static final Creator<ProductRecyclerViewModel> CREATOR = new Creator<ProductRecyclerViewModel>()
+    public static final Creator<Product> CREATOR = new Creator<Product>()
     {
         @Override
-        public ProductRecyclerViewModel createFromParcel(Parcel in)
+        public Product createFromParcel(Parcel in)
         {
-            return new ProductRecyclerViewModel(in);
+            return new Product(in);
         }
 
         @Override
-        public ProductRecyclerViewModel[] newArray(int size)
+        public Product[] newArray(int size)
         {
-            return new ProductRecyclerViewModel[size];
+            return new Product[size];
         }
     };
+
+    public String getProductId()
+    {
+        return productId;
+    }
+
+    public void setProductId(String productId)
+    {
+        this.productId = productId;
+    }
 
     public String getName()
     {
@@ -169,6 +155,33 @@ public class ProductRecyclerViewModel implements Parcelable
     public void setInStock(int inStock)
     {
         this.inStock = inStock;
+    }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeString(productId);
+        dest.writeString(name);
+        dest.writeString(shortDesc);
+        dest.writeString(longDesc);
+        dest.writeString(imgUri);
+        if (price == null)
+        {
+            dest.writeByte((byte) 0);
+        }
+        else {
+            dest.writeByte((byte) 1);
+            dest.writeDouble(price);
+        }
+        dest.writeString(orders);
+        dest.writeString(categoryId);
+        dest.writeInt(inStock);
     }
 
 }

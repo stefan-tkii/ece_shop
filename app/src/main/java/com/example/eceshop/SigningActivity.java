@@ -95,11 +95,12 @@ public class SigningActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancel() {
-
+                            facebookButton.setEnabled(true);
                     }
 
                     @Override
                     public void onError(FacebookException exception) {
+                        facebookButton.setEnabled(true);
                         CustomDialog dialog = new CustomDialog(getApplicationContext(), "Facebook Sign-In error",
                                 exception.getMessage(), false);
                         dialog.show();
@@ -170,6 +171,7 @@ public class SigningActivity extends AppCompatActivity {
 
     private void doGoogleSignIn()
     {
+        googleButton.setEnabled(false);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -198,6 +200,7 @@ public class SigningActivity extends AppCompatActivity {
             }
             catch (ApiException e)
             {
+                googleButton.setEnabled(true);
                 if(e.getStatusCode() != 12501) {
                     CustomDialog dialog = new CustomDialog(this, "Email Sign-In error", e.getMessage(), false);
                     dialog.show();
@@ -228,6 +231,7 @@ public class SigningActivity extends AppCompatActivity {
                     {
                         if (task.isSuccessful())
                         {
+                            googleButton.setEnabled(true);
                             boolean isNew = task.getResult().getAdditionalUserInfo().isNewUser();
                             if(isNew)
                             {
@@ -270,6 +274,7 @@ public class SigningActivity extends AppCompatActivity {
                             }
                         }
                         else {
+                            googleButton.setEnabled(true);
                             progressDialog.dismiss();
                             CustomDialog dialog = new CustomDialog(getApplicationContext(), "Email Sign-In error",
                                     task.getException().getMessage(), false);
@@ -281,6 +286,7 @@ public class SigningActivity extends AppCompatActivity {
 
     private void doFacebookSignIn()
     {
+        facebookButton.setEnabled(false);
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("email", "public_profile"));
     }
 
@@ -292,6 +298,7 @@ public class SigningActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful())
                 {
+                    facebookButton.setEnabled(true);
                     FirebaseUser logged = mAuth.getCurrentUser();
                     boolean isNewUser = task.getResult().getAdditionalUserInfo().isNewUser();
                     if(isNewUser)
@@ -335,6 +342,7 @@ public class SigningActivity extends AppCompatActivity {
                 }
                 else
                 {
+                    facebookButton.setEnabled(true);
                     progressDialog.dismiss();
                     CustomDialog dialog = new CustomDialog(getApplicationContext(), "Facebook Sign-In error",
                            task.getException().getMessage(), false);
@@ -371,7 +379,7 @@ public class SigningActivity extends AppCompatActivity {
     {
         FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
         DatabaseReference mDatabase = db.getReference("Products");
-        ProductRecyclerViewModel item = new ProductRecyclerViewModel("MacBook Pro M1", "The latest M1 based MacBook Pro.",
+        ProductDb item = new ProductDb("MacBook Pro M1", "The latest M1 based MacBook Pro.",
                 "This is the long description.",
                 "https://firebasestorage.googleapis.com/v0/b/ece-shop.appspot.com/o/product_images%2Fmacbook.jpg?alt=media&token=a04ca6e4-db88-4095-a307-258eddea43d0",
                 600.0, "4", "Hardware", 8);

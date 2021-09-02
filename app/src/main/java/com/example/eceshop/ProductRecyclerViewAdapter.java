@@ -21,12 +21,12 @@ public class ProductRecyclerViewAdapter extends RecyclerView.Adapter<ProductRecy
 {
 
     private Context context;
-    private List<ProductRecyclerViewModel> items;
+    private List<Product> items;
     private int lastPosition = -1;
     private int selectedPos = RecyclerView.NO_POSITION;
     private OnProductClickListener mListener;
 
-    public ProductRecyclerViewAdapter(Context context, List<ProductRecyclerViewModel> items)
+    public ProductRecyclerViewAdapter(Context context, List<Product> items)
     {
         this.context = context;
         this.items = items;
@@ -34,7 +34,7 @@ public class ProductRecyclerViewAdapter extends RecyclerView.Adapter<ProductRecy
 
     public interface OnProductClickListener
     {
-        void OnProductClick(int position, ProductRecyclerViewModel data);
+        void OnProductClick(int position, Product data);
     }
 
     public void setOnProductClickListener(OnProductClickListener listener)
@@ -53,7 +53,7 @@ public class ProductRecyclerViewAdapter extends RecyclerView.Adapter<ProductRecy
     @Override
     public void onBindViewHolder(@NonNull ItemViewHolder holder, int position)
     {
-        ProductRecyclerViewModel item = items.get(position);
+        Product item = items.get(position);
         holder.name.setText(item.getName());
         String imgUrl = item.getImgUri();
         Picasso.get().load(imgUrl).into(holder.image);
@@ -117,7 +117,6 @@ public class ProductRecyclerViewAdapter extends RecyclerView.Adapter<ProductRecy
     {
         if (position > lastPosition)
         {
-            //Animation animation = AnimationUtils.loadAnimation(context, android.R.anim.slide_in_left);
             Animation animation = AnimationUtils.loadAnimation(context, R.anim.item_animation);
             viewToAnimate.startAnimation(animation);
             lastPosition = position;
@@ -128,6 +127,18 @@ public class ProductRecyclerViewAdapter extends RecyclerView.Adapter<ProductRecy
     public void onViewDetachedFromWindow(@NonNull ItemViewHolder holder)
     {
         holder.clearAnimation();
+    }
+
+    @Override
+    public long getItemId(int position)
+    {
+        return position;
+    }
+
+    @Override
+    public int getItemViewType(int position)
+    {
+        return position;
     }
 
 }

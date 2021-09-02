@@ -36,6 +36,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -54,6 +55,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -64,9 +66,8 @@ public class ProductDetailsActivity extends AppCompatActivity
 {
 
     private static final String CLICKED_KEY = "com.example.eceshop.CLICKED_PRODUCT";
-    private ProductRecyclerViewModel model;
+    private Product model;
     private Toolbar toolbar;
-    private String productId;
     private AlertDialog progressDialog;
     private ArrayAdapter<String> arrayAdapterSort;
 
@@ -86,6 +87,7 @@ public class ProductDetailsActivity extends AppCompatActivity
     private AppCompatButton postCommentBtn;
     private RecyclerView commentsRecyclerView;
     private TextView placeholderTextView;
+    private ProgressBar loadBar;
 
     private CommentsRecyclerViewAdapter commentsAdapter;
 
@@ -100,6 +102,8 @@ public class ProductDetailsActivity extends AppCompatActivity
     private int counter;
     private String prevKey;
     private String afterKey;
+    private String userKey;
+    private static final int BATCH_SIZE = 3;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -115,7 +119,6 @@ public class ProductDetailsActivity extends AppCompatActivity
 
         prevKey = "";
         afterKey = "";
-        productId = "";
         nextKey = null;
         sortBy = "Latest";
         loadMore = true;
@@ -144,8 +147,7 @@ public class ProductDetailsActivity extends AppCompatActivity
         postCommentBtn = findViewById(R.id.postCommentBtn);
         commentsRecyclerView = findViewById(R.id.comments_recyclerView);
         placeholderTextView = findViewById(R.id.placeholderTextView);
-
-        placeholderTextView.setVisibility(View.VISIBLE);
+        loadBar = findViewById(R.id.details_item_load_bar);
 
         comments = new ArrayList<>();
         commentsAdapter = new CommentsRecyclerViewAdapter(this, comments);
@@ -172,9 +174,8 @@ public class ProductDetailsActivity extends AppCompatActivity
                                 String commenter = item.getUserEmail();
                                 if(email.equals(commenter))
                                 {
-                                    Log.e("das","The email matches.");
                                     int comp = comments.size() - pos;
-                                    if(comp <= 3)
+                                    if(comp <= BATCH_SIZE)
                                     {
                                         if(sortBy.equals("Latest"))
                                         {
@@ -186,34 +187,25 @@ public class ProductDetailsActivity extends AppCompatActivity
                                         }
                                     }
                                     FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
-                                    DatabaseReference ref = db.getReference("Comments");
-                                    ref.orderByChild("content").equalTo(item.getContent());
+                                    DatabaseReference ref = db.getReference("ProductComments");
+                                    DatabaseReference childRef = ref.child(model.getProductId()).getRef();
+                                    DatabaseReference finalRef = childRef.child(item.getId()).getRef();
                                     progressDialog.show();
-                                    ref.addListenerForSingleValueEvent(new ValueEventListener()
+                                    finalRef.addListenerForSingleValueEvent(new ValueEventListener()
                                     {
                                         @Override
                                         public void onDataChange(@NonNull DataSnapshot snapshot)
                                         {
-                                            for(DataSnapshot snap : snapshot.getChildren())
+                                            snapshot.getRef().removeValue(new DatabaseReference.CompletionListener()
                                             {
-                                                Comment c = snap.getValue(Comment.class);
-                                                @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                                                long postedAtLong = c.getPostedAt();
-                                                String postedAt = sdf.format(new Date(postedAtLong));
-                                                if(postedAt.equals(item.getPostedAt()))
+                                                @Override
+                                                public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref)
                                                 {
-                                                    snap.getRef().removeValue(new DatabaseReference.CompletionListener()
-                                                    {
-                                                        @Override
-                                                        public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref)
-                                                        {
-                                                            progressDialog.dismiss();
-                                                            comments.remove(pos);
-                                                            commentsAdapter.notifyItemRemoved(pos);
-                                                        }
-                                                    });
+                                                    progressDialog.dismiss();
+                                                    comments.remove(pos);
+                                                    commentsAdapter.notifyItemRemoved(pos);
                                                 }
-                                            }
+                                            });
                                         }
 
                                         @Override
@@ -313,7 +305,43 @@ public class ProductDetailsActivity extends AppCompatActivity
             @Override
             public void onClick(View v)
             {
-                Log.e("GG", "Add to cart button is clicked.");
+                progressDialog.show();
+                FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
+                DatabaseReference ref = db.getReference("Carts").child(userKey).child("CartItems");
+                ref.addListenerForSingleValueEvent(new ValueEventListener()
+                {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot)
+                    {
+                        boolean found = false;
+                        for(DataSnapshot snap : snapshot.getChildren())
+                        {
+                            if(snap.getKey().equals(model.getProductId()))
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(found)
+                        {
+                            progressDialog.dismiss();
+                            CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Task error", "This product is already added to your cart.", false);
+                            dialog.show();
+                        }
+                        else
+                        {
+                            addToCart();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error)
+                    {
+                        progressDialog.dismiss();
+                        CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", error.getMessage(), false);
+                        dialog.show();
+                    }
+                });
             }
         });
 
@@ -340,13 +368,15 @@ public class ProductDetailsActivity extends AppCompatActivity
                         Log.e("TAGGER", "User has been found.");
                         String userId = user.getUid();
                         FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
-                        DatabaseReference mDatabase = db.getReference("Comments");
-                        Comment cmn = new Comment(userId, productId, input, System.currentTimeMillis());
+                        DatabaseReference mDatabase = db.getReference("ProductComments").child(model.getProductId());
+                        Comment cmn = new Comment(userId, input, System.currentTimeMillis());
                         @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                         String postedAt = sdf.format(new Date(System.currentTimeMillis()));
-                        mDatabase.push().setValue(cmn).addOnCompleteListener(new OnCompleteListener<Void>()
+                        String key = mDatabase.push().getKey();
+                        final HashMap<String, Object> comm = new HashMap<>();
+                        comm.put(key, cmn);
+                        mDatabase.updateChildren(comm).addOnCompleteListener(new OnCompleteListener<Void>()
                         {
-                            @SuppressLint("SetTextI18n")
                             @Override
                             public void onComplete(@NonNull Task<Void> task)
                             {
@@ -354,10 +384,9 @@ public class ProductDetailsActivity extends AppCompatActivity
                                 {
                                     placeholderTextView.setVisibility(View.GONE);
                                     progressDialog.dismiss();
-                                    Log.e("TAGGER", "Comment has been posted.");
                                     if(sortBy.equals("Latest"))
                                     {
-                                        CommentRvItem item = new CommentRvItem(user.getDisplayName(), user.getEmail(), input, postedAt);
+                                        CommentRvItem item = new CommentRvItem(key, user.getDisplayName(), user.getEmail(), input, postedAt);
                                         resetInput();
                                         comments.add(0, item);
                                         commentsAdapter.notifyItemInserted(0);
@@ -373,14 +402,12 @@ public class ProductDetailsActivity extends AppCompatActivity
                                 }
                                 else
                                 {
-                                    Log.e("TAGGER", "Failed to post the comment.");
                                     resetInput();
                                     progressDialog.dismiss();
                                     CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", "Could not post this comment.", false);
                                     dialog.show();
                                 }
                             }
-
                         });
                     }
                     else
@@ -401,20 +428,50 @@ public class ProductDetailsActivity extends AppCompatActivity
         categoryTitles = loadCategoryTitles();
 
         model = getIntent().getParcelableExtra(CLICKED_KEY);
+
+        placeholderTextView.setVisibility(View.GONE);
+        loadBar.setVisibility(View.VISIBLE);
+
         if(model != null)
         {
-            Log.e("HG", "Object is not empty will print results.");
-            Log.e("HG", "Name: " + model.getName());
-            Log.e("HG", "Short description: " + model.getShortDesc());
-            Log.e("HG", "Price: " + model.getPrice());
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            userKey = user.getUid();
+            loadData();
         }
         else
         {
             progressDialog.dismiss();
-            Log.e("HG", "Empty object is passed.");
+            CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", "Error loading this view could not obtain the required information.", false);
+            dialog.show();
         }
-        Log.e("TAGGER", "At end of onCreate will try to fetch the product.");
-        getProduct();
+    }
+
+    private void addToCart()
+    {
+        final HashMap<String, Object> item = new HashMap<>();
+        CartData data = new CartData(System.currentTimeMillis(), model.getPrice(), model.getOrders());
+        item.put(model.getProductId(), data);
+        FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
+        DatabaseReference ref = db.getReference("Carts");
+        ref.child(userKey).child("CartItems").updateChildren(item).addOnCompleteListener(new OnCompleteListener<Void>()
+        {
+            @Override
+            public void onComplete(@NonNull Task<Void> task)
+            {
+                if(task.isSuccessful())
+                {
+                    progressDialog.dismiss();
+                    CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Product status", "Successfully added this product to your cart.", true);
+                    dialog.show();
+                }
+                else
+                {
+                    progressDialog.dismiss();
+                    CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", task.getException().getMessage(), false);
+                    dialog.show();
+                }
+            }
+        });
     }
 
     private void resetInput()
@@ -430,58 +487,6 @@ public class ProductDetailsActivity extends AppCompatActivity
                 commentInput.clearFocus();
             }
         }
-    }
-
-    private void getProduct()
-    {
-        Log.e("TAGGER", "Inside get product.");
-        FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
-        DatabaseReference ref = db.getReference("Products");
-        ref.orderByChild("name").equalTo(model.getName());
-        ValueEventListener valueEventListener = new ValueEventListener()
-        {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot)
-            {
-                if(snapshot.exists())
-                {
-                    for(DataSnapshot snap : snapshot.getChildren())
-                    {
-                        ProductRecyclerViewModel item = snap.getValue(ProductRecyclerViewModel.class);
-                        Double price = snap.child("price").getValue(Double.class);
-                        String shortDesc = snap.child("shortDesc").getValue(String.class);
-                        String longDesc = snap.child("longDesc").getValue(String.class);
-                        if(price.equals(model.getPrice()) && shortDesc.equals(model.getShortDesc()) && longDesc.equals(model.getLongDesc()))
-                        {
-                            productId = snap.getKey();
-                            loadData();
-                            break;
-                        }
-                    }
-                    if(productId.equals(""))
-                    {
-                        progressDialog.dismiss();
-                        CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Database/Network error", "Could not retrieve the specified product.", false);
-                        dialog.show();
-                    }
-                }
-                else
-                {
-                    progressDialog.dismiss();
-                    CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Database/Network error", "This product does not exist.", false);
-                    dialog.show();
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error)
-            {
-                progressDialog.dismiss();
-                CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Database/Network error", error.getMessage(), false);
-                dialog.show();
-            }
-        };
-        ref.addListenerForSingleValueEvent(valueEventListener);
     }
 
     private void loadData()
@@ -519,7 +524,6 @@ public class ProductDetailsActivity extends AppCompatActivity
             }
 
         }
-        Log.e("TAGGER", "At end of loadData will try to fetch the comments.");
         getComments(sortBy, nextKey);
     }
 
@@ -530,7 +534,6 @@ public class ProductDetailsActivity extends AppCompatActivity
         {
             if(sortOption.equals("Oldest"))
             {
-                Log.e("TAGGER", "Fetching latest comments.");
                 ValueEventListener listener = new ValueEventListener()
                 {
                     @Override
@@ -538,19 +541,14 @@ public class ProductDetailsActivity extends AppCompatActivity
                     {
                         if(snapshot.exists())
                         {
-                            Log.e("TAGGER", "Comments exist.");
-                            boolean added = false;
                             int count = (int) snapshot.getChildrenCount();
                             int i = 1;
+                            List<String> keys = new ArrayList<>();
                             for(DataSnapshot snap : snapshot.getChildren())
                             {
                                 Comment comm = snap.getValue(Comment.class);
-                                if(comm.getProductId().equals(productId))
-                                {
-                                    Log.e("TAGGER", "A comment has been found for this product.");
-                                    added = true;
-                                    dbComments.add(comm);
-                                }
+                                keys.add(snap.getKey());
+                                dbComments.add(comm);
                                 if(i == count)
                                 {
                                     prevKey = nextKey;
@@ -558,27 +556,22 @@ public class ProductDetailsActivity extends AppCompatActivity
                                 nextKey = snap.getKey();
                                 i++;
                             }
-                            if(added)
-                            {
-                                Log.e("TAGGER", "Will proceed to arrangeComments. dbComments.size() = " + dbComments.size());
-                                counter = 0;
-                                arrangeComments();
-                            }
-                            else
-                            {
-                                Log.e("TAGGER", "No comments was found in this batch will recursively proceed to the next batch.");
-                                getComments(sortBy, nextKey);
-                            }
+                            counter = 0;
+                            arrangeComments(keys);
                         }
                         else
                         {
-                            Log.e("TAGGER", "No more comments can be found the end of the Db list is reached.");
                             if(progressDialog.isShowing())
                             {
                                 progressDialog.dismiss();
                             }
+                            loadBar.setVisibility(View.GONE);
                             loadMore = false;
-                            if(comments.size() > 0)
+                            if(comments.size() == 0)
+                            {
+                                placeholderTextView.setVisibility(View.VISIBLE);
+                            }
+                            else
                             {
                                 Toast.makeText(ProductDetailsActivity.this, "No more comments left to display.", Toast.LENGTH_SHORT).show();
                             }
@@ -592,6 +585,11 @@ public class ProductDetailsActivity extends AppCompatActivity
                         {
                             progressDialog.dismiss();
                         }
+                        loadBar.setVisibility(View.GONE);
+                        if(comments.size() == 0)
+                        {
+                            placeholderTextView.setVisibility(View.VISIBLE);
+                        }
                         CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Database/Network error", error.getMessage(), false);
                         dialog.show();
                     }
@@ -600,7 +598,6 @@ public class ProductDetailsActivity extends AppCompatActivity
             }
             else if(sortOption.equals("Latest"))
             {
-                Log.e("TAGGER", "Will fetch the oldest comments.");
                 ValueEventListener listener = new ValueEventListener()
                 {
                     @Override
@@ -609,19 +606,15 @@ public class ProductDetailsActivity extends AppCompatActivity
                         if(snapshot.exists())
                         {
                             boolean flag = true;
-                            boolean added = false;
                             boolean set = false;
                             int count = (int) snapshot.getChildrenCount();
                             ArrayList<Comment> sorter = new ArrayList<>();
+                            ArrayList<String> keys = new ArrayList<>();
                             for(DataSnapshot snap : snapshot.getChildren())
                             {
                                 Comment comm = snap.getValue(Comment.class);
-                                if(comm.getProductId().equals(productId))
-                                {
-                                    Log.e("TAGGER", "A comments has been found");
-                                    added = true;
-                                    sorter.add(comm);
-                                }
+                                keys.add(snap.getKey());
+                                sorter.add(comm);
                                 if(flag)
                                 {
                                     if(count == 1)
@@ -638,31 +631,29 @@ public class ProductDetailsActivity extends AppCompatActivity
                                     set = false;
                                 }
                             }
-                            if(added)
+                            Collections.reverse(sorter);
+                            Collections.reverse(keys);
+                            for (Comment c : sorter)
                             {
-                                Collections.reverse(sorter);
-                                for (Comment c : sorter)
-                                {
-                                    dbComments.add(c);
-                                }
-                                counter = 0;
-                                Log.e("TAGGER", "Will proceed to arrangeComments. dbComments.size() = " + dbComments.size());
-                                arrangeComments();
+                                dbComments.add(c);
                             }
-                            else
-                            {
-                                Log.e("TAGGER", "No comments were found in this batch proceeding to the next.");
-                                getComments(sortBy, nextKey);
-                            }
+                            counter = 0;
+                            arrangeComments(keys);
                         }
                         else
                         {
+                            Log.e("da", "Comments do not exist");
                             if(progressDialog.isShowing())
                             {
                                 progressDialog.dismiss();
                             }
+                            loadBar.setVisibility(View.GONE);
                             loadMore = false;
-                            if(comments.size() > 0)
+                            if(comments.size() == 0)
+                            {
+                                placeholderTextView.setVisibility(View.VISIBLE);
+                            }
+                            else
                             {
                                 Toast.makeText(ProductDetailsActivity.this, "No more comments left to display.", Toast.LENGTH_SHORT).show();
                             }
@@ -675,6 +666,11 @@ public class ProductDetailsActivity extends AppCompatActivity
                         if(progressDialog.isShowing())
                         {
                             progressDialog.dismiss();
+                        }
+                        loadBar.setVisibility(View.GONE);
+                        if(comments.size() == 0)
+                        {
+                            placeholderTextView.setVisibility(View.VISIBLE);
                         }
                         CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Database/Network error", error.getMessage(), false);
                         dialog.show();
@@ -689,6 +685,11 @@ public class ProductDetailsActivity extends AppCompatActivity
             {
                 progressDialog.dismiss();
             }
+            loadBar.setVisibility(View.GONE);
+            if(comments.size() == 0)
+            {
+                placeholderTextView.setVisibility(View.VISIBLE);
+            }
             CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Database/Network error", "Cannot specify a method for getting the comments.", false);
             dialog.show();
         }
@@ -697,22 +698,24 @@ public class ProductDetailsActivity extends AppCompatActivity
     private Query getCommentsQuery(String sortOption, String nextId)
     {
         FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
-        DatabaseReference ref = db.getReference("Comments");
+        DatabaseReference mDatabase = db.getReference("ProductComments");
+        Log.e("da", model.getProductId());
+        DatabaseReference ref = mDatabase.child(model.getProductId()).getRef();
         if(sortOption.equals("Oldest"))
         {
             if(nextId == null)
             {
-                return ref.orderByKey().limitToFirst(3);
+                return ref.orderByKey().limitToFirst(BATCH_SIZE);
             }
-            return ref.orderByKey().startAfter(nextId).limitToFirst(3);
+            return ref.orderByKey().startAfter(nextId).limitToFirst(BATCH_SIZE);
         }
         else if(sortOption.equals("Latest"))
         {
             if(nextId == null)
             {
-                return ref.orderByKey().limitToLast(3);
+                return ref.orderByKey().limitToLast(BATCH_SIZE);
             }
-            return ref.orderByKey().endBefore(nextId).limitToLast(3);
+            return ref.orderByKey().endBefore(nextId).limitToLast(BATCH_SIZE);
         }
         else
         {
@@ -720,21 +723,17 @@ public class ProductDetailsActivity extends AppCompatActivity
         }
     }
 
-    private void arrangeComments()
+    private void arrangeComments(List<String> ids)
     {
-        Log.e("JJ", "Inside arrangeComments.");
-        Log.e("JJ", "COUNTER = " + counter + ";  SIZE = " + dbComments.size());
         if(counter >= dbComments.size())
         {
-            Log.e("JJ", "Will exit arrange comments.");
             if(progressDialog.isShowing())
             {
                 progressDialog.dismiss();
             }
+            loadBar.setVisibility(View.GONE);
             if(dbComments.size() > 0)
             {
-                Log.e("JJ", "Will reset comments array in arrange comments.");
-                placeholderTextView.setVisibility(View.GONE);
                 dbComments.clear();
                 commentsAdapter.notifyDataSetChanged();
             }
@@ -742,7 +741,6 @@ public class ProductDetailsActivity extends AppCompatActivity
         }
         FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
         DatabaseReference ref = db.getReference("Users");
-        Log.e("JJ", dbComments.get(counter).getUserId());
         ref.orderByKey().equalTo(dbComments.get(counter).getUserId());
 
         ref.addListenerForSingleValueEvent(new ValueEventListener()
@@ -756,19 +754,19 @@ public class ProductDetailsActivity extends AppCompatActivity
                     {
                         if(snap.getKey().equals(dbComments.get(counter).getUserId()))
                         {
-                            Log.e("JJ","Counter=" + counter + "   Size=" + dbComments.size());
                             User u = snap.getValue(User.class);
                             @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                             long postedAtLong = dbComments.get(counter).getPostedAt();
                             String postedAt = sdf.format(new Date(postedAtLong));
                             Log.e("JJ",u.getFullName());
-                            CommentRvItem item = new CommentRvItem(u.getFullName(), u.getEmail(), dbComments.get(counter).getContent(), postedAt);
+                            CommentRvItem item = new CommentRvItem(ids.get(counter),
+                                    u.getFullName(), u.getEmail(), dbComments.get(counter).getContent(), postedAt);
                             comments.add(item);
                             break;
                         }
                     }
                     counter++;
-                    arrangeComments();
+                    arrangeComments(ids);
                 }
                 else
                 {
@@ -845,12 +843,10 @@ public class ProductDetailsActivity extends AppCompatActivity
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id)
             {
-                Log.e("JJ", "Inside on ItemClick of comments sorter.");
                 String item = arrayAdapterSort.getItem(position);
                 commentsSorter.clearFocus();
                 if(!sortBy.equals(item))
                 {
-                    Log.e("JJ", "Will proceed to sorting.");
                     comments.clear();
                     commentsAdapter.notifyDataSetChanged();
                     sortBy = item;

@@ -58,20 +58,23 @@ import java.util.List;
 import dmax.dialog.SpotsDialog;
 import maes.tech.intentanim.CustomIntent;
 
-public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnItemSelectedListener, DashboardFragment.DashboardFragmentTouchListener
+public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnItemSelectedListener, DashboardFragment.DashboardFragmentTouchListener, CartFragment.CartFragmentTouchListener
 {
 
     private FirebaseAuth mAuth;
     private static final int POS_CLOSE = 0;
     private static final int POS_DASHBOARD = 1;
-    private static final int POS_MY_PROFILE = 2;
-    private static final int POS_NEARBY_RES = 3;
-    private static final int POS_SETTINGS = 4;
-    private static final int POS_ABOUT_US = 5;
+    private static final int POS_CART = 2;
+    private static final int POS_ORDERS = 3;
+    private static final int POS_PROFILE = 4;
+    private static final int POS_SETTINGS = 5;
     private static final int POS_LOGOUT = 7;
 
     TextView textNotificationsItemCount;
     int mNotificationsItemCount = 1;
+
+    private boolean bundleStatus;
+    private Bundle bundle;
 
     private String lastSearched;
 
@@ -87,6 +90,7 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     private SlidingRootNav slidingRootNav;
 
     private int selectedNavigation;
+    private DrawerAdapter adapter;
 
     private SearchView searchView;
 
@@ -102,6 +106,10 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         Log.e("Home", "Inside on create of home activity.");
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
+
+        bundleStatus = false;
+        bundle = new Bundle();
+        lastSearched = "";
 
         database = new SuggestionDatabase(this);
 
@@ -147,13 +155,13 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         screenIcons = loadScreenIcons();
         screenTitles = loadScreenTitles();
 
-        DrawerAdapter adapter = new DrawerAdapter(Arrays.asList(
+        adapter = new DrawerAdapter(Arrays.asList(
            createItemFor(POS_CLOSE),
                 createItemFor(POS_DASHBOARD).setChecked(true),
-                createItemFor(POS_MY_PROFILE),
-                createItemFor(POS_NEARBY_RES),
+                createItemFor(POS_CART),
+                createItemFor(POS_ORDERS),
+                createItemFor(POS_PROFILE),
                 createItemFor(POS_SETTINGS),
-                createItemFor(POS_ABOUT_US),
                 new SpaceItem(260),
                 createItemFor(POS_LOGOUT)
         ));
@@ -173,7 +181,6 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     protected void onResume()
     {
         super.onResume();
-        Log.e("Home", "Inside on resume");
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -188,7 +195,8 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
 
         setupBadge();
 
-        actionView.setOnClickListener(new View.OnClickListener() {
+        actionView.setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View v) {
                 onOptionsItemSelected(menuItem);
@@ -206,14 +214,57 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item)
             {
-                Bundle bundle = new Bundle();
-                bundle.putString("searchInput", "");
-                lastSearched = "";
-                DashboardFragment fragInfo = new DashboardFragment();
-                fragInfo.setArguments(bundle);
-                resetInput(searchView);
-                getSupportFragmentManager().beginTransaction().replace(R.id.main_container, fragInfo).commit();
-                return true;
+                if(selectedNavigation == POS_DASHBOARD)
+                {
+                    if(lastSearched.equals(""))
+                    {
+                        return true;
+                    }
+                    bundle.putString("searchInput", "");
+                    bundleStatus = false;
+                    lastSearched = "";
+                    DashboardFragment fragInfo = new DashboardFragment();
+                    fragInfo.setArguments(bundle);
+                    resetInput(searchView);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_container, fragInfo).commit();
+                    return true;
+                }
+                else if(selectedNavigation == POS_CART)
+                {
+                    bundle.putString("searchInput", "");
+                    bundleStatus = false;
+                    lastSearched = "";
+                    resetInput(searchView);
+                    return true;
+                }
+                else if(selectedNavigation == POS_ORDERS)
+                {
+                    bundle.putString("searchInput", "");
+                    bundleStatus = false;
+                    lastSearched = "";
+                    resetInput(searchView);
+                    return true;
+                }
+                else if(selectedNavigation == POS_PROFILE)
+                {
+                    bundle.putString("searchInput", "");
+                    bundleStatus = false;
+                    lastSearched = "";
+                    resetInput(searchView);
+                    return true;
+                }
+                else if(selectedNavigation == POS_SETTINGS)
+                {
+                    bundle.putString("searchInput", "");
+                    bundleStatus = false;
+                    lastSearched = "";
+                    resetInput(searchView);
+                    return true;
+                }
+                else
+                {
+                    return true;
+                }
             }
         };
 
@@ -255,13 +306,10 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                 {
                     lastSearched = query;
                 }
-                Bundle bundle = new Bundle();
                 bundle.putString("searchInput", query);
-                Log.e("Tagge", query);
-                DashboardFragment fragInfo = new DashboardFragment();
-                fragInfo.setArguments(bundle);
+                bundleStatus = true;
                 resetInput(searchView);
-                getSupportFragmentManager().beginTransaction().replace(R.id.main_container, fragInfo).commit();
+                adapter.setSelected(POS_DASHBOARD);
                 return true;
             }
 
@@ -479,34 +527,66 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         {
             if(selectedNavigation == POS_DASHBOARD)
             {
-                slidingRootNav.closeMenu();
+                if(bundleStatus)
+                {
+                    DashboardFragment fragInfo = new DashboardFragment();
+                    fragInfo.setArguments(bundle);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_container, fragInfo).commit();
+                    slidingRootNav.closeMenu();
+                }
+                else
+                {
+                    slidingRootNav.closeMenu();
+                }
             }
             else {
-                selectedNavigation = POS_DASHBOARD;
-                Log.e("DASHBOARD", "Inside If statement of POS_DASHBOARD.");
-                getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new DashboardFragment()).commit();
-                slidingRootNav.closeMenu();
+                if(bundleStatus)
+                {
+                    selectedNavigation = POS_DASHBOARD;
+                    DashboardFragment fragInfo = new DashboardFragment();
+                    fragInfo.setArguments(bundle);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_container, fragInfo).commit();
+                    slidingRootNav.closeMenu();
+                }
+                else
+                {
+                    selectedNavigation = POS_DASHBOARD;
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new DashboardFragment()).commit();
+                    slidingRootNav.closeMenu();
+                }
             }
         }
-        else if(position == POS_MY_PROFILE)
+        else if(position == POS_CART)
         {
-            if(selectedNavigation == POS_MY_PROFILE)
+            if(selectedNavigation == POS_CART)
             {
                 slidingRootNav.closeMenu();
             }
             else {
-                selectedNavigation = POS_MY_PROFILE;
+                selectedNavigation = POS_CART;
+                getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new CartFragment()).commit();
                 slidingRootNav.closeMenu();
             }
         }
-        else if(position == POS_NEARBY_RES)
+        else if(position == POS_ORDERS)
         {
-            if(selectedNavigation == POS_NEARBY_RES)
+            if(selectedNavigation == POS_ORDERS)
             {
                 slidingRootNav.closeMenu();
             }
             else {
-                selectedNavigation = POS_NEARBY_RES;
+                selectedNavigation = POS_ORDERS;
+                slidingRootNav.closeMenu();
+            }
+        }
+        else if(position == POS_PROFILE)
+        {
+            if(selectedNavigation == POS_PROFILE)
+            {
+                slidingRootNav.closeMenu();
+            }
+            else {
+                selectedNavigation = POS_PROFILE;
                 slidingRootNav.closeMenu();
             }
         }
@@ -514,23 +594,12 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         {
             if(selectedNavigation == POS_SETTINGS)
             {
-                slidingRootNav.closeMenu();
-            }
-            else {
-                selectedNavigation = POS_SETTINGS;
-                slidingRootNav.closeMenu();
-            }
-        }
-        else if(position == POS_ABOUT_US)
-        {
-            if(selectedNavigation == POS_ABOUT_US)
-            {
 
                 slidingRootNav.closeMenu();
             }
             else
             {
-                selectedNavigation = POS_ABOUT_US;
+                selectedNavigation = POS_SETTINGS;
                 slidingRootNav.closeMenu();
             }
         }
@@ -567,6 +636,12 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
 
     @Override
     public void onDashboardFragmentTouch()
+    {
+        resetInput(searchView);
+    }
+
+    @Override
+    public void onCartFragmentTouch()
     {
         resetInput(searchView);
     }

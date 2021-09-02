@@ -72,7 +72,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
     private CategoryRecyclerViewAdapter categoryAdapter;
 
     private RecyclerView productRecyclerView;
-    private ArrayList<ProductRecyclerViewModel> productItems;
+    private ArrayList<Product> productItems;
     private ProductRecyclerViewAdapter productAdapter;
 
     private AlertDialog progressDialog;
@@ -87,8 +87,11 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
 
     private String[] categoryTitles;
     private Drawable[] categoryIcons;
+    private static final int BATCH_SIZE = 3;
 
     private static final String CLICKED_KEY = "com.example.eceshop.CLICKED_PRODUCT";
+
+    private boolean running;
 
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
@@ -102,6 +105,8 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
         nextPrice = 0.0d;
         sortBy = "Latest";
         categorySort = "";
+
+        running = false;
 
         Log.e("HU", "Inside onCreateView of DashboardFragment");
 
@@ -203,17 +208,17 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                 }
                 if(scrollY == (v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight()))
                 {
-                    Log.e("TUG", "At bottom of screen scrolled.");
                     if(loadMore)
                     {
-                        Log.e("TUG", "Going to load more.");
-                        backToTop.setVisibility(View.VISIBLE);
-                        itemBar.setVisibility(View.VISIBLE);
-                        getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                        if(!running)
+                        {
+                            backToTop.setVisibility(View.VISIBLE);
+                            itemBar.setVisibility(View.VISIBLE);
+                            getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                        }
                     }
                     else
                     {
-                        Log.e("TUG", "Will not load more.");
                         backToTop.setVisibility(View.VISIBLE);
                     }
                 }
@@ -249,8 +254,6 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
     public void onResume()
     {
         super.onResume();
-
-        Log.e("HU", "Inside onResume of DashboardFragment");
 
         String[] sortOptions = getResources().getStringArray(R.array.sorts);
         arrayAdapterSort = new ArrayAdapter<>(getContext(), R.layout.category_dropdown_item, sortOptions);
@@ -369,7 +372,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
     }
 
     @Override
-    public void OnProductClick(int position, ProductRecyclerViewModel data)
+    public void OnProductClick(int position, Product data)
     {
         Intent intent = new Intent(getActivityNonNull(), ProductDetailsActivity.class);
         intent.putExtra(CLICKED_KEY, data);
@@ -384,6 +387,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
 
     private void getProducts(String optionSort, String newId, Double newPrice, String searchBy, String category)
     {
+        running = true;
         Query mDatabase = getProductsQuery(optionSort, newId, newPrice);
         if(mDatabase == null)
         {
@@ -404,7 +408,12 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             boolean added = false;
                             for(DataSnapshot dataSnapshot : snapshot.getChildren())
                             {
-                                ProductRecyclerViewModel item = dataSnapshot.getValue(ProductRecyclerViewModel.class);
+                                ProductDb dbItem = dataSnapshot.getValue(ProductDb.class);
+                                Product item = new Product(dataSnapshot.getKey(), dbItem.getName(),
+                                        dbItem.getShortDesc(), dbItem.getLongDesc(),
+                                        dbItem.getImgUri(), dbItem.getPrice(),
+                                        dbItem.getOrders(), dbItem.getCategoryId(), dbItem.getInStock());
+
                                 if(searchBy.equals("") && category.equals(""))
                                 {
                                     productItems.add(item);
@@ -441,6 +450,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             }
                             if(added)
                             {
+                                running = false;
                                 itemBar.setVisibility(View.GONE);
                                 productAdapter.notifyDataSetChanged();
                             }
@@ -448,6 +458,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             {
                                 if(searchBy.equals("") && category.equals(""))
                                 {
+                                    running = false;
                                     itemBar.setVisibility(View.GONE);
                                     productAdapter.notifyDataSetChanged();
                                 }
@@ -459,6 +470,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                         }
                         else
                         {
+                            running = false;
                             itemBar.setVisibility(View.GONE);
                             loadMore = false;
                             productAdapter.notifyDataSetChanged();
@@ -469,6 +481,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                     @Override
                     public void onCancelled(@NonNull DatabaseError error)
                     {
+                        running = false;
                         itemBar.setVisibility(View.GONE);
                         CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
                         dialog.show();
@@ -486,11 +499,15 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                         if(snapshot.exists())
                         {
                             boolean added = false;
-                            ArrayList<ProductRecyclerViewModel> sorter = new ArrayList<>();
+                            ArrayList<Product> sorter = new ArrayList<>();
                             boolean flag = true;
                             for(DataSnapshot dataSnapshot : snapshot.getChildren())
                             {
-                                ProductRecyclerViewModel item = dataSnapshot.getValue(ProductRecyclerViewModel.class);
+                                ProductDb dbItem = dataSnapshot.getValue(ProductDb.class);
+                                Product item = new Product(dataSnapshot.getKey(), dbItem.getName(),
+                                        dbItem.getShortDesc(), dbItem.getLongDesc(),
+                                        dbItem.getImgUri(), dbItem.getPrice(),
+                                        dbItem.getOrders(), dbItem.getCategoryId(), dbItem.getInStock());
                                 sorter.add(item);
                                 if(flag)
                                 {
@@ -499,7 +516,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                                 }
                             }
                             Collections.reverse(sorter);
-                            for(ProductRecyclerViewModel m : sorter)
+                            for(Product m : sorter)
                             {
                                 if(searchBy.equals("") && category.equals(""))
                                 {
@@ -536,6 +553,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             }
                             if(added)
                             {
+                                running = false;
                                 itemBar.setVisibility(View.GONE);
                                 productAdapter.notifyDataSetChanged();
                             }
@@ -543,6 +561,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             {
                                 if(searchBy.equals("") && category.equals(""))
                                 {
+                                    running = false;
                                     itemBar.setVisibility(View.GONE);
                                     productAdapter.notifyDataSetChanged();
                                 }
@@ -554,6 +573,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                         }
                         else
                         {
+                            running = false;
                             itemBar.setVisibility(View.GONE);
                             loadMore = false;
                             productAdapter.notifyDataSetChanged();
@@ -564,6 +584,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                     @Override
                     public void onCancelled(@NonNull DatabaseError error)
                     {
+                        running = false;
                         itemBar.setVisibility(View.GONE);
                         CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
                         dialog.show();
@@ -583,7 +604,12 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             boolean added = false;
                             for(DataSnapshot dataSnapshot : snapshot.getChildren())
                             {
-                                ProductRecyclerViewModel item = dataSnapshot.getValue(ProductRecyclerViewModel.class);
+                                ProductDb dbItem = dataSnapshot.getValue(ProductDb.class);
+                                Product item = new Product(dataSnapshot.getKey(), dbItem.getName(),
+                                        dbItem.getShortDesc(), dbItem.getLongDesc(),
+                                        dbItem.getImgUri(), dbItem.getPrice(),
+                                        dbItem.getOrders(), dbItem.getCategoryId(), dbItem.getInStock());
+
                                 if(searchBy.equals("") && category.equals(""))
                                 {
                                     productItems.add(item);
@@ -621,6 +647,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             }
                             if(added)
                             {
+                                running = false;
                                 itemBar.setVisibility(View.GONE);
                                 productAdapter.notifyDataSetChanged();
                             }
@@ -628,6 +655,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             {
                                 if(searchBy.equals("") && category.equals(""))
                                 {
+                                    running = false;
                                     itemBar.setVisibility(View.GONE);
                                     productAdapter.notifyDataSetChanged();
                                 }
@@ -639,6 +667,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                         }
                         else
                         {
+                            running = false;
                             itemBar.setVisibility(View.GONE);
                             loadMore = false;
                             productAdapter.notifyDataSetChanged();
@@ -649,6 +678,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                     @Override
                     public void onCancelled(@NonNull DatabaseError error)
                     {
+                        running = false;
                         itemBar.setVisibility(View.GONE);
                         CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
                         dialog.show();
@@ -666,11 +696,16 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                         if(snapshot.exists())
                         {
                             boolean added = false;
-                            ArrayList<ProductRecyclerViewModel> sorter = new ArrayList<>();
+                            ArrayList<Product> sorter = new ArrayList<>();
                             boolean flag = true;
                             for(DataSnapshot dataSnapshot : snapshot.getChildren())
                             {
-                                ProductRecyclerViewModel item = dataSnapshot.getValue(ProductRecyclerViewModel.class);
+                                ProductDb dbItem = dataSnapshot.getValue(ProductDb.class);
+                                Product item = new Product(dataSnapshot.getKey(), dbItem.getName(),
+                                        dbItem.getShortDesc(), dbItem.getLongDesc(),
+                                        dbItem.getImgUri(), dbItem.getPrice(),
+                                        dbItem.getOrders(), dbItem.getCategoryId(), dbItem.getInStock());
+
                                 sorter.add(item);
                                 if(flag)
                                 {
@@ -680,7 +715,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                                 }
                             }
                             Collections.reverse(sorter);
-                            for(ProductRecyclerViewModel m : sorter)
+                            for(Product m : sorter)
                             {
                                 if(searchBy.equals("") && category.equals(""))
                                 {
@@ -717,6 +752,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             }
                             if(added)
                             {
+                                running = false;
                                 itemBar.setVisibility(View.GONE);
                                 productAdapter.notifyDataSetChanged();
                             }
@@ -724,6 +760,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             {
                                 if(searchBy.equals("") && category.equals(""))
                                 {
+                                    running = false;
                                     itemBar.setVisibility(View.GONE);
                                     productAdapter.notifyDataSetChanged();
                                 }
@@ -735,6 +772,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                         }
                         else
                         {
+                            running = false;
                             itemBar.setVisibility(View.GONE);
                             loadMore = false;
                             productAdapter.notifyDataSetChanged();
@@ -745,6 +783,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                     @Override
                     public void onCancelled(@NonNull DatabaseError error)
                     {
+                        running = false;
                         itemBar.setVisibility(View.GONE);
                         CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
                         dialog.show();
@@ -763,33 +802,33 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
         {
             if(newId == null)
             {
-                return db.getReference("Products").orderByKey().limitToFirst(3);
+                return db.getReference("Products").orderByKey().limitToFirst(BATCH_SIZE);
             }
-            return db.getReference("Products").orderByKey().startAfter(newId).limitToFirst(3);
+            return db.getReference("Products").orderByKey().startAfter(newId).limitToFirst(BATCH_SIZE);
         }
         else if(optionSort.equals("Oldest"))
         {
             if(newId == null)
             {
-                return db.getReference("Products").orderByKey().limitToLast(3);
+                return db.getReference("Products").orderByKey().limitToLast(BATCH_SIZE);
             }
-            return db.getReference("Products").orderByKey().endBefore(newId).limitToLast(3);
+            return db.getReference("Products").orderByKey().endBefore(newId).limitToLast(BATCH_SIZE);
         }
         else if(optionSort.equals("Price ascending"))
         {
             if(newPrice == 0.0d)
             {
-                return db.getReference("Products").orderByChild("price").limitToFirst(3);
+                return db.getReference("Products").orderByChild("price").limitToFirst(BATCH_SIZE);
             }
-            return db.getReference("Products").orderByChild("price").startAfter(newPrice, newId).limitToFirst(3);
+            return db.getReference("Products").orderByChild("price").startAfter(newPrice, newId).limitToFirst(BATCH_SIZE);
         }
         else if(optionSort.equals("Price descending"))
         {
             if(newPrice == 0.0d)
             {
-                return db.getReference("Products").orderByChild("price").limitToLast(3);
+                return db.getReference("Products").orderByChild("price").limitToLast(BATCH_SIZE);
             }
-            return db.getReference("Products").orderByChild("price").endBefore(newPrice, newId).limitToLast(3);
+            return db.getReference("Products").orderByChild("price").endBefore(newPrice, newId).limitToLast(BATCH_SIZE);
         }
         else if(optionSort.equals("Orders"))
         {
