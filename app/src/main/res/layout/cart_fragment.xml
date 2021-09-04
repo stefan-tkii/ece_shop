@@ -99,18 +99,41 @@
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"/>
 
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/orderAllBtn"
+                android:layout_width="220dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:drawableStart="@drawable/ic_baseline_store_24"
+                android:drawablePadding="2dp"
+                android:gravity="center"
+                android:paddingStart="50dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="10dp"
+                android:drawableTint="#76FD17"
+                android:paddingEnd="50dp"
+                android:singleLine="true"
+                android:background="@drawable/gradient_btn_bg"
+                android:text="@string/order_all"
+                android:textColor="#76FD17"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cart_Separator"/>
+
             <LinearLayout
+                android:id="@+id/cart_main_container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 app:layout_constraintVertical_bias="0"
-                app:layout_constraintTop_toBottomOf="@id/cart_Separator"
+                app:layout_constraintTop_toBottomOf="@id/orderAllBtn"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginTop="15dp">
+                android:layout_marginTop="15dp"
+                android:layout_marginRight="10dp">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="match_parent"

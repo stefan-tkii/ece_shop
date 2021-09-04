@@ -1,5 +1,7 @@
 package com.example.eceshop;
 
+import java.util.Objects;
+
 public class CartItem
 {
 
@@ -119,6 +121,42 @@ public class CartItem
     public void setExpanded(boolean expanded)
     {
         isExpanded = expanded;
+    }
+
+    public void setAll(CartItem item)
+    {
+        this.productId = item.getProductId();
+        this.name = item.getName();
+        this.shortDesc = item.getShortDesc();
+        this.imgUri = item.getImgUri();
+        this.price = item.getPrice();
+        this.orders = item.getOrders();
+        this.inStock = item.getInStock();
+        this.quantity = item.getQuantity();
+        this.isExpanded = item.isExpanded();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CartItem item = (CartItem) o;
+        return this.inStock == item.getInStock() &&
+                this.quantity == item.getQuantity() &&
+                this.isExpanded == item.isExpanded() &&
+                Objects.equals(this.productId, item.getProductId()) &&
+                Objects.equals(this.name, item.getName()) &&
+                Objects.equals(this.shortDesc, item.getShortDesc()) &&
+                Objects.equals(this.imgUri, item.getImgUri()) &&
+                Objects.equals(this.price, item.getPrice()) &&
+                Objects.equals(this.orders, item.getOrders());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(productId, name, shortDesc, imgUri, price, orders, inStock, quantity, isExpanded);
     }
 
 }

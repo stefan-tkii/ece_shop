@@ -84,7 +84,6 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<CommentsRe
         if (position > lastPosition)
         {
             Animation animation = AnimationUtils.loadAnimation(context, android.R.anim.slide_in_left);
-            //Animation animation = AnimationUtils.loadAnimation(context, R.anim.item_animation);
             viewToAnimate.startAnimation(animation);
             lastPosition = position;
         }
@@ -94,6 +93,18 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<CommentsRe
     public void onViewDetachedFromWindow(@NonNull CommentViewHolder holder)
     {
         holder.clearAnimation();
+    }
+
+    @Override
+    public long getItemId(int position)
+    {
+        return position;
+    }
+
+    @Override
+    public int getItemViewType(int position)
+    {
+        return  position;
     }
 
 }

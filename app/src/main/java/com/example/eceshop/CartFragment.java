@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -52,6 +53,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
     private RecyclerView cartRecyclerView;
     private TextView placeholderView;
     private ProgressBar loadBar;
+    private AppCompatButton orderAllBtn;
 
     private CartFragmentTouchListener listener;
     private AlertDialog progressDialog;
@@ -67,6 +69,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
     private double nextPrice;
     private String nextKey;
     private static final int BATCH_SIZE = 3;
+    private int prevSize;
 
     private long prevTimeStamp;
     private double prevPrice;
@@ -91,8 +94,10 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
         cartRecyclerView = root.findViewById(R.id.cartItems_RecyclerView);
         placeholderView = root.findViewById(R.id.cartPlaceholder);
         loadBar = root.findViewById(R.id.cart_item_load_bar);
+        orderAllBtn = root.findViewById(R.id.orderAllBtn);
 
         running = false;
+        prevSize = 0;
 
         sortBy = "Latest";
         resetKeys();
@@ -177,6 +182,15 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
             }
         });
 
+        orderAllBtn.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                orderAll();
+            }
+        });
+
         placeholderView.setVisibility(View.GONE);
 
         ((SimpleItemAnimator) Objects.requireNonNull(cartRecyclerView.getItemAnimator())).setSupportsChangeAnimations(false);
@@ -193,6 +207,11 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
         getCartProducts(sortBy, nextTimeStamp, nextPrice, nextKey);
 
         return  root;
+    }
+
+    private void orderAll()
+    {
+        Log.e("FF", "Order all button is clicked.");
     }
 
     private Query getCartQuery(String sort, long timestamp, double price, String key)
@@ -242,7 +261,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
     private void getCartProducts(String sort, long timestamp, double price, String key)
     {
         running = true;
-        Log.e("GHA", "INSIDE GETCARTPRODUCTS METHOD START.");
+        prevSize = cartItems.size();
         Query q = getCartQuery(sort, timestamp, price, key);
         if(q == null)
         {
@@ -280,6 +299,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
                         loadMore = false;
                         if(cartItems.size() == 0)
                         {
+                            orderAllBtn.setVisibility(View.GONE);
                             placeholderView.setVisibility(View.VISIBLE);
                         }
                         else
@@ -296,6 +316,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
                     loadBar.setVisibility(View.GONE);
                     if(cartItems.size() == 0)
                     {
+                        orderAllBtn.setVisibility(View.GONE);
                         placeholderView.setVisibility(View.VISIBLE);
                     }
                     CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
@@ -351,6 +372,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
                         loadMore = false;
                         if(cartItems.size() == 0)
                         {
+                            orderAllBtn.setVisibility(View.GONE);
                             placeholderView.setVisibility(View.VISIBLE);
                         }
                         else
@@ -367,6 +389,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
                     loadBar.setVisibility(View.GONE);
                     if(cartItems.size() == 0)
                     {
+                        orderAllBtn.setVisibility(View.GONE);
                         placeholderView.setVisibility(View.VISIBLE);
                     }
                     CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
@@ -408,6 +431,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
                         loadMore = false;
                         if(cartItems.size() == 0)
                         {
+                            orderAllBtn.setVisibility(View.GONE);
                             placeholderView.setVisibility(View.VISIBLE);
                         }
                         else
@@ -424,6 +448,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
                     loadBar.setVisibility(View.GONE);
                     if(cartItems.size() == 0)
                     {
+                        orderAllBtn.setVisibility(View.GONE);
                         placeholderView.setVisibility(View.VISIBLE);
                     }
                     CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
@@ -482,6 +507,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
                         loadMore = false;
                         if(cartItems.size() == 0)
                         {
+                            orderAllBtn.setVisibility(View.GONE);
                             placeholderView.setVisibility(View.VISIBLE);
                         }
                         else
@@ -498,6 +524,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
                     loadBar.setVisibility(View.GONE);
                     if(cartItems.size() == 0)
                     {
+                        orderAllBtn.setVisibility(View.GONE);
                         placeholderView.setVisibility(View.VISIBLE);
                     }
                     CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
@@ -511,6 +538,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
             loadBar.setVisibility(View.GONE);
             if(cartItems.size() == 0)
             {
+                orderAllBtn.setVisibility(View.GONE);
                 placeholderView.setVisibility(View.VISIBLE);
             }
             Toast.makeText(getActivityNonNull(), "Not yet implemented.", Toast.LENGTH_SHORT).show();
@@ -523,7 +551,8 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
         {
             running = false;
             loadBar.setVisibility(View.GONE);
-            itemsAdapter.notifyDataSetChanged();
+            itemsAdapter.notifyItemRangeInserted(prevSize, BATCH_SIZE);
+            removeAfterItemDuplicate();
             return;
         }
         else
@@ -538,11 +567,20 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
                     if(snapshot.exists())
                     {
                         ProductDb model = snapshot.getValue(ProductDb.class);
+                        int quantity;
+                        if(model.getInStock() > 0)
+                        {
+                            quantity = 1;
+                        }
+                        else
+                        {
+                            quantity = 0;
+                        }
                         CartItem item = new CartItem(snapshot.getKey(),
                                 model.getName(),
                                 model.getShortDesc(),
                                 model.getImgUri(),
-                                model.getPrice(), model.getOrders(), model.getInStock(), 0, false);
+                                model.getPrice(), model.getOrders(), model.getInStock(), quantity, false);
                         cartItems.add(item);
                         getProducts(idList);
                     }
@@ -716,6 +754,33 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
         }
         else {
             throw new RuntimeException("null returned from getActivity()");
+        }
+    }
+
+    private void removeAfterItemDuplicate()
+    {
+        int i = 0;
+        CartItem prev = new CartItem();
+        for(CartItem c : cartItems)
+        {
+            if(i == 0)
+            {
+                prev.setAll(c);
+            }
+            else
+            {
+                if(c.equals(prev))
+                {
+                    cartItems.remove(i);
+                    itemsAdapter.notifyItemRemoved(i);
+                    break;
+                }
+                else
+                {
+                    prev.setAll(c);
+                }
+            }
+            i++;
         }
     }
 

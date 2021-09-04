@@ -26,8 +26,7 @@ public class CartItemRecyclerViewAdapter extends RecyclerView.Adapter<CartItemRe
 
     private Context context;
     private List<CartItem> items;
-    private int selectedPos = RecyclerView.NO_POSITION;
-    private int lastPosition = -1;
+      private int lastPosition = -1;
     private OnCartButtonClickListener mListener;
 
     public CartItemRecyclerViewAdapter(Context context, List<CartItem> items)
@@ -61,16 +60,26 @@ public class CartItemRecyclerViewAdapter extends RecyclerView.Adapter<CartItemRe
         CartItem model = items.get(position);
         Picasso.get().load(model.getImgUri()).into(holder.itemImg);
         holder.itemName.setText(model.getName());
-        String price = "Price: " + model.getPrice() + "$";
-        holder.itemPrice.setText(price);
+        String price;
         int stock = model.getInStock();
         if(stock == 0)
         {
+            price = "Price: " + String.valueOf(model.getPrice()) + "$";
+            holder.itemPrice.setText(price);
             holder.itemStock.setText(holder.itemView.getContext().getResources().getString(R.string.no));
             holder.itemStock.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.mainTextColor));
         }
         else
         {
+            if(model.getQuantity() == 0)
+            {
+                price = "Price: " +  String.valueOf(model.getPrice()) + "$";
+            }
+            else
+            {
+                price = "Price: " +  String.valueOf(model.getQuantity()*model.getPrice()) + "$";
+            }
+            holder.itemPrice.setText(price);
             holder.itemStock.setText(holder.itemView.getContext().getResources().getString(R.string.yes));
             holder.itemStock.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.yesColor));
         }
@@ -82,15 +91,22 @@ public class CartItemRecyclerViewAdapter extends RecyclerView.Adapter<CartItemRe
         holder.expandableContainer.setVisibility(set ? View.VISIBLE : View.GONE);
 
         holder.quantitySelector.setRange(0, model.getInStock());
-        holder.quantitySelector.setNumber("1");
+        holder.quantitySelector.setNumber(String.valueOf(model.getQuantity()));
 
         holder.quantitySelector.setOnClickListener(new ElegantNumberButton.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                String num = holder.quantitySelector.getNumber();
-                model.setQuantity(Integer.parseInt(num));
+                String disp = holder.quantitySelector.getNumber();
+                int num = Integer.parseInt(disp);
+                double totalPrice = num*model.getPrice();
+                model.setQuantity(num);
+                if(num > 0)
+                {
+                    String newPrice = "Price: " + totalPrice + "$";
+                    holder.itemPrice.setText(newPrice);
+                }
             }
         });
 

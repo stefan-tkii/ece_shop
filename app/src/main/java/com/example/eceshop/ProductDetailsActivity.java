@@ -104,6 +104,7 @@ public class ProductDetailsActivity extends AppCompatActivity
     private String afterKey;
     private String userKey;
     private static final int BATCH_SIZE = 3;
+    private boolean running;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -122,6 +123,7 @@ public class ProductDetailsActivity extends AppCompatActivity
         nextKey = null;
         sortBy = "Latest";
         loadMore = true;
+        running = false;
         dbComments = new ArrayList<>();
 
         progressDialog = new SpotsDialog.Builder()
@@ -190,7 +192,7 @@ public class ProductDetailsActivity extends AppCompatActivity
                                     DatabaseReference ref = db.getReference("ProductComments");
                                     DatabaseReference childRef = ref.child(model.getProductId()).getRef();
                                     DatabaseReference finalRef = childRef.child(item.getId()).getRef();
-                                    progressDialog.show();
+                                    //progressDialog.show();
                                     finalRef.addListenerForSingleValueEvent(new ValueEventListener()
                                     {
                                         @Override
@@ -201,7 +203,7 @@ public class ProductDetailsActivity extends AppCompatActivity
                                                 @Override
                                                 public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref)
                                                 {
-                                                    progressDialog.dismiss();
+                                                    //progressDialog.dismiss();
                                                     comments.remove(pos);
                                                     commentsAdapter.notifyItemRemoved(pos);
                                                 }
@@ -211,7 +213,7 @@ public class ProductDetailsActivity extends AppCompatActivity
                                         @Override
                                         public void onCancelled(@NonNull DatabaseError error)
                                         {
-                                            progressDialog.dismiss();
+                                           // progressDialog.dismiss();
                                             CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", "Could not delete this comment.", false);
                                             dialog.show();
                                         }
@@ -294,7 +296,10 @@ public class ProductDetailsActivity extends AppCompatActivity
                     backToTop.setVisibility(View.VISIBLE);
                     if(loadMore)
                     {
-                        getComments(sortBy, nextKey);
+                        if(!running)
+                        {
+                            getComments(sortBy, nextKey);
+                        }
                     }
                 }
             }
@@ -360,12 +365,10 @@ public class ProductDetailsActivity extends AppCompatActivity
                 }
                 else
                 {
-                    progressDialog.show();
-                    Log.e("TAGGER", "Will try to post the comment.");
+                    //progressDialog.show();
                     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                     if(user != null)
                     {
-                        Log.e("TAGGER", "User has been found.");
                         String userId = user.getUid();
                         FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
                         DatabaseReference mDatabase = db.getReference("ProductComments").child(model.getProductId());
@@ -383,7 +386,7 @@ public class ProductDetailsActivity extends AppCompatActivity
                                 if(task.isSuccessful())
                                 {
                                     placeholderTextView.setVisibility(View.GONE);
-                                    progressDialog.dismiss();
+                                    //progressDialog.dismiss();
                                     if(sortBy.equals("Latest"))
                                     {
                                         CommentRvItem item = new CommentRvItem(key, user.getDisplayName(), user.getEmail(), input, postedAt);
@@ -403,7 +406,7 @@ public class ProductDetailsActivity extends AppCompatActivity
                                 else
                                 {
                                     resetInput();
-                                    progressDialog.dismiss();
+                                    //progressDialog.dismiss();
                                     CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", "Could not post this comment.", false);
                                     dialog.show();
                                 }
@@ -412,9 +415,8 @@ public class ProductDetailsActivity extends AppCompatActivity
                     }
                     else
                     {
-                        Log.e("TAGGER", "Logged in user has not been found.");
                         resetInput();
-                        progressDialog.dismiss();
+                       // progressDialog.dismiss();
                         CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", "Cannot get session details.", false);
                         dialog.show();
                     }
@@ -529,6 +531,7 @@ public class ProductDetailsActivity extends AppCompatActivity
 
     private void getComments(String sortOption, String nextId)
     {
+        running = true;
         Query commentFetcher = getCommentsQuery(sortOption, nextId);
         if(commentFetcher != null)
         {
@@ -561,6 +564,7 @@ public class ProductDetailsActivity extends AppCompatActivity
                         }
                         else
                         {
+                            running = false;
                             if(progressDialog.isShowing())
                             {
                                 progressDialog.dismiss();
@@ -581,6 +585,7 @@ public class ProductDetailsActivity extends AppCompatActivity
                     @Override
                     public void onCancelled(@NonNull DatabaseError error)
                     {
+                        running = false;
                         if(progressDialog.isShowing())
                         {
                             progressDialog.dismiss();
@@ -642,7 +647,7 @@ public class ProductDetailsActivity extends AppCompatActivity
                         }
                         else
                         {
-                            Log.e("da", "Comments do not exist");
+                            running = false;
                             if(progressDialog.isShowing())
                             {
                                 progressDialog.dismiss();
@@ -663,6 +668,7 @@ public class ProductDetailsActivity extends AppCompatActivity
                     @Override
                     public void onCancelled(@NonNull DatabaseError error)
                     {
+                        running = false;
                         if(progressDialog.isShowing())
                         {
                             progressDialog.dismiss();
@@ -681,6 +687,7 @@ public class ProductDetailsActivity extends AppCompatActivity
         }
         else
         {
+            running = false;
             if(progressDialog.isShowing())
             {
                 progressDialog.dismiss();
@@ -727,6 +734,7 @@ public class ProductDetailsActivity extends AppCompatActivity
     {
         if(counter >= dbComments.size())
         {
+            running = false;
             if(progressDialog.isShowing())
             {
                 progressDialog.dismiss();
@@ -758,7 +766,6 @@ public class ProductDetailsActivity extends AppCompatActivity
                             @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                             long postedAtLong = dbComments.get(counter).getPostedAt();
                             String postedAt = sdf.format(new Date(postedAtLong));
-                            Log.e("JJ",u.getFullName());
                             CommentRvItem item = new CommentRvItem(ids.get(counter),
                                     u.getFullName(), u.getEmail(), dbComments.get(counter).getContent(), postedAt);
                             comments.add(item);
@@ -770,6 +777,7 @@ public class ProductDetailsActivity extends AppCompatActivity
                 }
                 else
                 {
+                    running = false;
                     if(progressDialog.isShowing())
                     {
                         progressDialog.dismiss();
@@ -782,6 +790,7 @@ public class ProductDetailsActivity extends AppCompatActivity
             @Override
             public void onCancelled(@NonNull DatabaseError error)
             {
+                running = false;
                 if(progressDialog.isShowing())
                 {
                     progressDialog.dismiss();
@@ -855,7 +864,6 @@ public class ProductDetailsActivity extends AppCompatActivity
                     nextKey = null;
                     loadMore = true;
                     getComments(sortBy, nextKey);
-                    Log.e("GG", "Will sort by: " + sortBy);
                 }
                 else
                 {
