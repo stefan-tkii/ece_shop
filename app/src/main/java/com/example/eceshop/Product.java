@@ -11,7 +11,7 @@ public class Product implements Parcelable
     private String longDesc;
     private String imgUri;
     private Double price;
-    private String orders;
+    private int orders;
     private String categoryId;
     private int inStock;
 
@@ -20,7 +20,7 @@ public class Product implements Parcelable
 
     }
 
-    public Product(String productId, String name, String shortDesc, String longDesc, String imgUri, Double price, String orders, String categoryId, int inStock)
+    public Product(String productId, String name, String shortDesc, String longDesc, String imgUri, Double price, int orders, String categoryId, int inStock)
     {
         this.productId = productId;
         this.name = name;
@@ -32,6 +32,7 @@ public class Product implements Parcelable
         this.categoryId = categoryId;
         this.inStock = inStock;
     }
+
 
     protected Product(Parcel in)
     {
@@ -47,7 +48,7 @@ public class Product implements Parcelable
         else {
             price = in.readDouble();
         }
-        orders = in.readString();
+        orders = in.readInt();
         categoryId = in.readString();
         inStock = in.readInt();
     }
@@ -127,12 +128,12 @@ public class Product implements Parcelable
         this.price = price;
     }
 
-    public String getOrders()
+    public int getOrders()
     {
         return orders;
     }
 
-    public void setOrders(String orders)
+    public void setOrders(int orders)
     {
         this.orders = orders;
     }
@@ -179,7 +180,7 @@ public class Product implements Parcelable
             dest.writeByte((byte) 1);
             dest.writeDouble(price);
         }
-        dest.writeString(orders);
+        dest.writeInt(orders);
         dest.writeString(categoryId);
         dest.writeInt(inStock);
     }

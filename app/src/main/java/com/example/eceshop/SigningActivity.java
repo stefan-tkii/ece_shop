@@ -50,6 +50,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import dmax.dialog.SpotsDialog;
+import maes.tech.intentanim.CustomIntent;
 
 
 public class SigningActivity extends AppCompatActivity {
@@ -187,7 +188,8 @@ public class SigningActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN)
         {
@@ -201,7 +203,8 @@ public class SigningActivity extends AppCompatActivity {
             catch (ApiException e)
             {
                 googleButton.setEnabled(true);
-                if(e.getStatusCode() != 12501) {
+                if(e.getStatusCode() != 12501)
+                {
                     CustomDialog dialog = new CustomDialog(this, "Email Sign-In error", e.getMessage(), false);
                     dialog.show();
                     progressDialog.dismiss();
@@ -253,6 +256,7 @@ public class SigningActivity extends AppCompatActivity {
                                             progressDialog.dismiss();
                                             Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                                             startActivity(intent);
+                                            CustomIntent.customType(SigningActivity.this, "left-to-right");
                                             finish();
                                         }
                                         else
@@ -270,6 +274,7 @@ public class SigningActivity extends AppCompatActivity {
                                 progressDialog.dismiss();
                                 Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                                 startActivity(intent);
+                                CustomIntent.customType(SigningActivity.this, "left-to-right");
                                 finish();
                             }
                         }
@@ -320,6 +325,7 @@ public class SigningActivity extends AppCompatActivity {
                                     progressDialog.dismiss();
                                     Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                                     startActivity(intent);
+                                    CustomIntent.customType(SigningActivity.this, "left-to-right");
                                     finish();
                                 }
                                 else
@@ -337,6 +343,7 @@ public class SigningActivity extends AppCompatActivity {
                         progressDialog.dismiss();
                         Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                         startActivity(intent);
+                        CustomIntent.customType(SigningActivity.this, "left-to-right");
                         finish();
                     }
                 }
@@ -382,7 +389,7 @@ public class SigningActivity extends AppCompatActivity {
         ProductDb item = new ProductDb("MacBook Pro M1", "The latest M1 based MacBook Pro.",
                 "This is the long description.",
                 "https://firebasestorage.googleapis.com/v0/b/ece-shop.appspot.com/o/product_images%2Fmacbook.jpg?alt=media&token=a04ca6e4-db88-4095-a307-258eddea43d0",
-                600.0, "4", "Hardware", 8);
+                600.0, 4, "Hardware", 8);
         mDatabase.push().setValue(item).addOnCompleteListener(new OnCompleteListener<Void>()
         {
             @Override

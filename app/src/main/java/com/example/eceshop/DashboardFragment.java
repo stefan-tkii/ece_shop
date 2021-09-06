@@ -33,9 +33,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.eceshop.DynamicRvInterface.LoadMore;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DataSnapshot;
@@ -49,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
@@ -79,6 +76,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
     private ProgressBar itemBar;
 
     private String nextKey;
+    private int nextOrders;
     private Double nextPrice;
     private boolean loadMore;
     private String sortBy;
@@ -103,6 +101,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
         loadMore = true;
         nextKey = null;
         nextPrice = 0.0d;
+        nextOrders = -1;
         sortBy = "Latest";
         categorySort = "";
 
@@ -214,7 +213,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                         {
                             backToTop.setVisibility(View.VISIBLE);
                             itemBar.setVisibility(View.VISIBLE);
-                            getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                            getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
                         }
                     }
                     else
@@ -233,18 +232,18 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
             if(searchQuery.equals(""))
             {
                 Toast.makeText(getActivityNonNull(), "Back to displaying all products.", Toast.LENGTH_SHORT).show();
-                getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
             }
             else
             {
                 Toast.makeText(getActivityNonNull(), "Displaying results for: " + searchQuery, Toast.LENGTH_SHORT).show();
-                getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
             }
         }
         else
         {
             searchQuery = "";
-            getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+            getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
         }
 
         return root;
@@ -274,8 +273,9 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                     loadMore = true;
                     itemBar.setVisibility(View.VISIBLE);
                     nextPrice = 0.0d;
+                    nextOrders = -1;
                     nextKey = null;
-                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
                 }
                 else
                 {
@@ -352,11 +352,12 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
             categorySort = "";
             nextKey = null;
             nextPrice = 0.0d;
+            nextOrders = -1;
             productItems.clear();
             loadMore = true;
             itemBar.setVisibility(View.VISIBLE);
             productAdapter.notifyDataSetChanged();
-            getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+            getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
         }
         else
         {
@@ -364,10 +365,11 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
             nextKey = null;
             nextPrice = 0.0d;
             loadMore = true;
+            nextOrders = -1;
             productItems.clear();
             itemBar.setVisibility(View.VISIBLE);
             productAdapter.notifyDataSetChanged();
-            getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+            getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
         }
     }
 
@@ -385,14 +387,14 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
         void onDashboardFragmentTouch();
     }
 
-    private void getProducts(String optionSort, String newId, Double newPrice, String searchBy, String category)
+    private void getProducts(String optionSort, String newId, Double newPrice, String searchBy, String category, int newOrders)
     {
         running = true;
-        Query mDatabase = getProductsQuery(optionSort, newId, newPrice);
+        Query mDatabase = getProductsQuery(optionSort, newId, newPrice, newOrders);
         if(mDatabase == null)
         {
             itemBar.setVisibility(View.GONE);
-            Toast.makeText(getActivityNonNull(), "Not implemented yet.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivityNonNull(), "No valid sort option is selected.", Toast.LENGTH_SHORT).show();
         }
         else
         {
@@ -464,7 +466,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                                 }
                                 else
                                 {
-                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
                                 }
                             }
                         }
@@ -567,7 +569,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                                 }
                                 else
                                 {
-                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
                                 }
                             }
                         }
@@ -661,7 +663,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                                 }
                                 else
                                 {
-                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
                                 }
                             }
                         }
@@ -766,7 +768,112 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                                 }
                                 else
                                 {
-                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort);
+                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            running = false;
+                            itemBar.setVisibility(View.GONE);
+                            loadMore = false;
+                            productAdapter.notifyDataSetChanged();
+                            Toast.makeText(getActivityNonNull(), "No more products left to display.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error)
+                    {
+                        running = false;
+                        itemBar.setVisibility(View.GONE);
+                        CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
+                        dialog.show();
+                    }
+                };
+                mDatabase.addListenerForSingleValueEvent(valueListener);
+            }
+            else if(optionSort.equals("Orders"))
+            {
+                ValueEventListener valueListener = new ValueEventListener()
+                {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot)
+                    {
+                        if(snapshot.exists())
+                        {
+                            boolean added = false;
+                            ArrayList<Product> sorter = new ArrayList<>();
+                            boolean flag = true;
+                            for(DataSnapshot dataSnapshot : snapshot.getChildren())
+                            {
+                                ProductDb dbItem = dataSnapshot.getValue(ProductDb.class);
+                                Product item = new Product(dataSnapshot.getKey(), dbItem.getName(),
+                                        dbItem.getShortDesc(), dbItem.getLongDesc(),
+                                        dbItem.getImgUri(), dbItem.getPrice(),
+                                        dbItem.getOrders(), dbItem.getCategoryId(), dbItem.getInStock());
+
+                                sorter.add(item);
+                                if(flag)
+                                {
+                                    nextOrders = dataSnapshot.child("orders").getValue(int.class);
+                                    nextKey = dataSnapshot.getKey();
+                                    flag = false;
+                                }
+                            }
+                            Collections.reverse(sorter);
+                            for(Product m : sorter)
+                            {
+                                if(searchBy.equals("") && category.equals(""))
+                                {
+                                    productItems.add(m);
+                                }
+                                else if((!searchBy.equals("")) && category.equals(""))
+                                {
+                                    String name = m.getName();
+                                    if(Pattern.compile(Pattern.quote(searchBy), Pattern.CASE_INSENSITIVE).matcher(name).find())
+                                    {
+                                        productItems.add(m);
+                                        added = true;
+                                    }
+                                }
+                                else if(searchBy.equals("") && (!category.equals("")))
+                                {
+                                    String categoryId = m.getCategoryId();
+                                    if(categoryId.equals(category))
+                                    {
+                                        productItems.add(m);
+                                        added = true;
+                                    }
+                                }
+                                else if((!searchBy.equals("")) && (!category.equals("")))
+                                {
+                                    String name = m.getName();
+                                    String categoryId = m.getCategoryId();
+                                    if(Pattern.compile(Pattern.quote(searchBy), Pattern.CASE_INSENSITIVE).matcher(name).find() && categoryId.equals(category))
+                                    {
+                                        productItems.add(m);
+                                        added = true;
+                                    }
+                                }
+                            }
+                            if(added)
+                            {
+                                running = false;
+                                itemBar.setVisibility(View.GONE);
+                                productAdapter.notifyDataSetChanged();
+                            }
+                            else
+                            {
+                                if(searchBy.equals("") && category.equals(""))
+                                {
+                                    running = false;
+                                    itemBar.setVisibility(View.GONE);
+                                    productAdapter.notifyDataSetChanged();
+                                }
+                                else
+                                {
+                                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
                                 }
                             }
                         }
@@ -794,7 +901,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
         }
     }
 
-    private Query getProductsQuery(String optionSort, String newId, Double newPrice)
+    private Query getProductsQuery(String optionSort, String newId, Double newPrice, int newOrders)
     {
         FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
         DatabaseReference ref = db.getReference("Products");
@@ -832,7 +939,11 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
         }
         else if(optionSort.equals("Orders"))
         {
-            return null;
+            if(newOrders == -1)
+            {
+                return db.getReference("Products").orderByChild("orders").limitToLast(BATCH_SIZE);
+            }
+            return db.getReference("Products").orderByChild("orders").endBefore(newOrders, newId).limitToLast(BATCH_SIZE);
         }
         else
         {

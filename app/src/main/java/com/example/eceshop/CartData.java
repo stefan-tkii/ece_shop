@@ -4,14 +4,14 @@ public class CartData
 {
     private long timestamp;
     private double price;
-    private String orders;
+    private int orders;
 
     public CartData()
     {
 
     }
 
-    public CartData(long timestamp, double price, String orders)
+    public CartData(long timestamp, double price, int orders)
     {
         this.timestamp = timestamp;
         this.price = price;
@@ -38,12 +38,12 @@ public class CartData
         this.price = price;
     }
 
-    public String getOrders()
+    public int getOrders()
     {
         return orders;
     }
 
-    public void setOrders(String orders)
+    public void setOrders(int orders)
     {
         this.orders = orders;
     }

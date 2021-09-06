@@ -3,6 +3,7 @@ package com.example.eceshop;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.Objects;
 
 import dmax.dialog.SpotsDialog;
+import maes.tech.intentanim.CustomIntent;
 
 public class CartFragment extends Fragment implements CartItemRecyclerViewAdapter.OnCartButtonClickListener
 {
@@ -67,6 +69,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
     private boolean loadMore;
     private long nextTimeStamp;
     private double nextPrice;
+    private int nextOrders;
     private String nextKey;
     private static final int BATCH_SIZE = 3;
     private int prevSize;
@@ -78,8 +81,18 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
     private long afterTimeStamp;
     private double afterPrice;
     private String afterKey;
+    private int afterOrders;
 
     private boolean running;
+
+    private static final String BUTTON_KEY = "com.example.eceshop.INTENT_ORIGIN";
+    private static final String DATA = "com.example.eceshop.DATA_KEY";
+    private static final String LOAD_KEY = "com.example.eceshop.LOAD_MORE";
+    private static final String SORT_KEY = "com.example.eceshop.SORT";
+    private static final String NEXT_KEY = "com.example.eceshop.NEXT_ID";
+    private static final String NEXT_PRICE = "com.example.eceshop.NEXT_PRICE";
+    private static final String NEXT_ORDERS = "com.example.eceshop.NEXT_ORDERS";
+    private static final String NEXT_TIMESTAMP = "com.example.eceshop.NEXT_TIME";
 
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
@@ -166,7 +179,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
                         if(!running)
                         {
                             loadBar.setVisibility(View.VISIBLE);
-                            getCartProducts(sortBy, nextTimeStamp, nextPrice, nextKey);
+                            getCartProducts(sortBy, nextTimeStamp, nextPrice, nextOrders, nextKey);
                         }
                     }
                 }
@@ -204,17 +217,44 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
 
         loadBar.setVisibility(View.VISIBLE);
 
-        getCartProducts(sortBy, nextTimeStamp, nextPrice, nextKey);
+        getCartProducts(sortBy, nextTimeStamp, nextPrice, nextOrders, nextKey);
 
         return  root;
     }
 
     private void orderAll()
     {
-        Log.e("FF", "Order all button is clicked.");
+        Intent intent = new Intent(getActivityNonNull(), PaymentActivity.class);
+        intent.putExtra(BUTTON_KEY, "orderAll");
+        intent.putParcelableArrayListExtra(DATA, cartItems);
+        if(loadMore)
+        {
+            intent.putExtra(LOAD_KEY, true);
+            intent.putExtra(SORT_KEY, sortBy);
+            if(sortBy.equals("Latest") || sortBy.equals("Oldest"))
+            {
+                intent.putExtra(NEXT_TIMESTAMP, nextTimeStamp);
+            }
+            else if(sortBy.equals("Price ascending") || sortBy.equals("Price descending"))
+            {
+                intent.putExtra(NEXT_PRICE, nextPrice);
+                intent.putExtra(NEXT_KEY, nextKey);
+            }
+            else if(sortBy.equals("Orders"))
+            {
+                intent.putExtra(NEXT_ORDERS, nextOrders);
+                intent.putExtra(NEXT_KEY, nextKey);
+            }
+        }
+        else
+        {
+            intent.putExtra(LOAD_KEY, false);
+        }
+        startActivity(intent);
+        CustomIntent.customType(getActivityNonNull(), "left-to-right");
     }
 
-    private Query getCartQuery(String sort, long timestamp, double price, String key)
+    private Query getCartQuery(String sort, long timestamp, double price, int orders, String key)
     {
         DatabaseReference cartRef = database.getReference("Carts");
         DatabaseReference childRef = cartRef.child(userId).getRef();
@@ -253,16 +293,20 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
         }
         else if(sort.equals("Orders"))
         {
-            return null;
+            if(orders == -1)
+            {
+                return itemsRef.orderByChild("orders").limitToLast(BATCH_SIZE);
+            }
+            return itemsRef.orderByChild("orders").endBefore(orders, key).limitToLast(BATCH_SIZE);
         }
         return null;
     }
 
-    private void getCartProducts(String sort, long timestamp, double price, String key)
+    private void getCartProducts(String sort, long timestamp, double price, int orders, String key)
     {
         running = true;
         prevSize = cartItems.size();
-        Query q = getCartQuery(sort, timestamp, price, key);
+        Query q = getCartQuery(sort, timestamp, price, orders, key);
         if(q == null)
         {
             Toast.makeText(getActivityNonNull(), "Not yet implemented.", Toast.LENGTH_SHORT).show();
@@ -534,14 +578,79 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
         }
         else if(sortBy.equals("Orders"))
         {
-            running = false;
-            loadBar.setVisibility(View.GONE);
-            if(cartItems.size() == 0)
+            q.addListenerForSingleValueEvent(new ValueEventListener()
             {
-                orderAllBtn.setVisibility(View.GONE);
-                placeholderView.setVisibility(View.VISIBLE);
-            }
-            Toast.makeText(getActivityNonNull(), "Not yet implemented.", Toast.LENGTH_SHORT).show();
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot)
+                {
+                    if(snapshot.exists())
+                    {
+                        boolean flag = true;
+                        boolean set = false;
+                        int count = (int) snapshot.getChildrenCount();
+                        List<String> keys = new ArrayList<>();
+                        List<String> sorter = new ArrayList<>();
+                        for (DataSnapshot snap : snapshot.getChildren())
+                        {
+                            CartData data = snap.getValue(CartData.class);
+                            sorter.add(snap.getKey());
+                            if(flag)
+                            {
+                                if(count == 1)
+                                {
+                                    afterOrders = data.getOrders();
+                                    afterKey = snap.getKey();
+                                }
+                                nextOrders = data.getOrders();
+                                nextKey = snap.getKey();
+                                flag = false;
+                                set = true;
+                            }
+                            if(set)
+                            {
+                                afterOrders = data.getOrders();
+                                afterKey = snap.getKey();
+                                set = false;
+                            }
+                        }
+                        Collections.reverse(sorter);
+                        for(String s : sorter)
+                        {
+                            keys.add(s);
+                        }
+                        getProducts(keys);
+                    }
+                    else
+                    {
+                        running = false;
+                        loadBar.setVisibility(View.GONE);
+                        loadMore = false;
+                        if(cartItems.size() == 0)
+                        {
+                            orderAllBtn.setVisibility(View.GONE);
+                            placeholderView.setVisibility(View.VISIBLE);
+                        }
+                        else
+                        {
+                            Toast.makeText(getActivityNonNull(), "No more products left to display in cart.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error)
+                {
+                    running = false;
+                    loadBar.setVisibility(View.GONE);
+                    if(cartItems.size() == 0)
+                    {
+                        orderAllBtn.setVisibility(View.GONE);
+                        placeholderView.setVisibility(View.VISIBLE);
+                    }
+                    CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Database/Network error", error.getMessage(), false);
+                    dialog.show();
+                }
+            });
         }
     }
 
@@ -550,6 +659,10 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
         if(idList.size() == 0)
         {
             running = false;
+            if(cartItems.size() > 0)
+            {
+                orderAllBtn.setEnabled(true);
+            }
             loadBar.setVisibility(View.GONE);
             itemsAdapter.notifyItemRangeInserted(prevSize, BATCH_SIZE);
             removeAfterItemDuplicate();
@@ -631,7 +744,8 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
             }
             else if(sortBy.equals("Orders"))
             {
-                return;
+                nextOrders = afterOrders;
+                nextKey = afterKey;
             }
         }
         DatabaseReference mainRef = database.getReference("Carts");
@@ -651,6 +765,10 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
                     {
                         progressDialog.dismiss();
                         cartItems.remove(position);
+                        if(cartItems.size() == 0)
+                        {
+                            orderAllBtn.setEnabled(false);
+                        }
                         itemsAdapter.notifyItemRemoved(position);
                     }
                 });
@@ -681,7 +799,11 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
         }
         else
         {
-            Log.e("GG", "OnOrderButtonClick - will continue");
+            Intent intent = new Intent(getActivityNonNull(), PaymentActivity.class);
+            intent.putExtra(BUTTON_KEY, "orderOne");
+            intent.putExtra(DATA, data);
+            startActivity(intent);
+            CustomIntent.customType(getActivityNonNull(), "left-to-right");
         }
     }
 
@@ -715,7 +837,7 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
                     itemsAdapter.notifyDataSetChanged();
                     loadMore = true;
                     loadBar.setVisibility(View.VISIBLE);
-                    getCartProducts(sortBy, nextTimeStamp, nextPrice, nextKey);
+                    getCartProducts(sortBy, nextTimeStamp, nextPrice, nextOrders, nextKey);
                 }
                 else
                 {
@@ -792,9 +914,11 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
         nextTimeStamp = 0L;
         nextPrice = 0.0d;
         nextKey = "";
+        nextOrders = -1;
         afterTimeStamp = 0L;
         afterPrice = 0.0d;
         afterKey = "";
+        afterOrders = -1;
     }
 
 }

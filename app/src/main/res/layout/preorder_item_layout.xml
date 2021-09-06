@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginStart="10dp"
+    android:layout_marginEnd="10dp"
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="5dp"
+    android:orientation="horizontal"
+    android:weightSum="100"
+    android:backgroundTint="@color/gColor4"
+    android:background="@drawable/orderitem_bg"
+    android:id="@+id/preorderItemContainer"
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp">
+
+    <TextView
+        android:id="@+id/preorderItemName"
+        android:layout_gravity="center_vertical"
+        android:textSize="16sp"
+        android:layout_weight="50"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:textColor="#173797"
+        android:layout_marginEnd="5dp"
+        android:fontFamily="sans-serif-medium"
+        android:layout_height="wrap_content"
+        android:text="@string/product_s_name"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="50"
+        android:layout_gravity="center_vertical"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/preorderItemPrice"
+            android:layout_gravity="top"
+            android:textSize="14sp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_width="wrap_content"
+            android:textColor="#173797"
+            android:layout_marginStart="10dp"
+            android:fontFamily="sans-serif-condensed-light"
+            android:layout_height="wrap_content"
+            android:text="@string/price_unknown"/>
+
+        <TextView
+            android:id="@+id/preorderItemQuantity"
+            android:layout_gravity="bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-smallcaps"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/quantity_n_a"/>
+
+    </LinearLayout>
+
+</LinearLayout>

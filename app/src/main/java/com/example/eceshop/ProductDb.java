@@ -8,7 +8,7 @@ public class ProductDb
     private String longDesc;
     private String imgUri;
     private Double price;
-    private String orders;
+    private int orders;
     private String categoryId;
     private int inStock;
 
@@ -17,7 +17,7 @@ public class ProductDb
 
     }
 
-    public ProductDb(String name, String shortDesc, String longDesc, String imgUri, Double price, String orders, String categoryId, int inStock)
+    public ProductDb(String name, String shortDesc, String longDesc, String imgUri, Double price, int orders, String categoryId, int inStock)
     {
         this.name = name;
         this.shortDesc = shortDesc;
@@ -79,12 +79,12 @@ public class ProductDb
         this.price = price;
     }
 
-    public String getOrders()
+    public int getOrders()
     {
         return orders;
     }
 
-    public void setOrders(String orders)
+    public void setOrders(int orders)
     {
         this.orders = orders;
     }

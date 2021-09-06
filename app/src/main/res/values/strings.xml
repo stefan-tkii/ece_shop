@@ -67,6 +67,14 @@
     <string name="order_all">Order all</string>
     <string name="enter_amount">Enter Amount</string>
     <string name="pay_with_stripe">Pay with stripe</string>
+    <string name="total_price">Total price:</string>
+    <string name="n_a">N/A</string>
+    <string name="payment_details">Payment details</string>
+    <string name="make_payment">Make payment</string>
+    <string name="product_s_name">Product\'s name</string>
+    <string name="quantity_n_a">Quantity: N/A</string>
+    <string name="price_unknown">Price: Unknown</string>
+    <string name="order_items">Order items</string>
 
     <string-array name="categories">
         <item>All</item>

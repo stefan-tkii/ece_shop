@@ -70,6 +70,8 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     private static final int POS_SETTINGS = 5;
     private static final int POS_LOGOUT = 7;
 
+    private static final String SELECT_OPTION = "com.example.eceshop.OPTION";
+
     TextView textNotificationsItemCount;
     int mNotificationsItemCount = 1;
 
@@ -173,8 +175,19 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         list.setLayoutManager(new LinearLayoutManager(this));
         list.setAdapter(adapter);
 
-        adapter.setSelected(POS_DASHBOARD);
-
+        String select = getIntent().getStringExtra(SELECT_OPTION);
+        if(select == null)
+        {
+            adapter.setSelected(POS_DASHBOARD);
+        }
+        else if(select.equals("Cart"))
+        {
+            adapter.setSelected(POS_CART);
+        }
+        else if(select.equals("Orders"))
+        {
+            adapter.setSelected(POS_ORDERS);
+        }
     }
 
     @Override
@@ -226,7 +239,8 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                     DashboardFragment fragInfo = new DashboardFragment();
                     fragInfo.setArguments(bundle);
                     resetInput(searchView);
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_container, fragInfo).commit();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_container, fragInfo).commit();
                     return true;
                 }
                 else if(selectedNavigation == POS_CART)
@@ -531,7 +545,9 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                 {
                     DashboardFragment fragInfo = new DashboardFragment();
                     fragInfo.setArguments(bundle);
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_container, fragInfo).commit();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_container, fragInfo)
+                            .commit();
                     slidingRootNav.closeMenu();
                 }
                 else
@@ -545,13 +561,17 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                     selectedNavigation = POS_DASHBOARD;
                     DashboardFragment fragInfo = new DashboardFragment();
                     fragInfo.setArguments(bundle);
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_container, fragInfo).commit();
+                    getSupportFragmentManager().beginTransaction()
+                            .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                            .replace(R.id.main_container, fragInfo).commit();
                     slidingRootNav.closeMenu();
                 }
                 else
                 {
                     selectedNavigation = POS_DASHBOARD;
-                    getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new DashboardFragment()).commit();
+                    getSupportFragmentManager().beginTransaction()
+                            .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                            .replace(R.id.main_container, new DashboardFragment()).commit();
                     slidingRootNav.closeMenu();
                 }
             }
@@ -564,7 +584,9 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
             }
             else {
                 selectedNavigation = POS_CART;
-                getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new CartFragment()).commit();
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                        .replace(R.id.main_container, new CartFragment()).commit();
                 slidingRootNav.closeMenu();
             }
         }
@@ -576,6 +598,9 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
             }
             else {
                 selectedNavigation = POS_ORDERS;
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                        .replace(R.id.main_container, new OrdersFragment()).commit();
                 slidingRootNav.closeMenu();
             }
         }
