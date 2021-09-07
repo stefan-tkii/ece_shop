@@ -18,7 +18,6 @@
     <string name="enter_your_full_name">Enter your full name</string>
     <string name="enter_your_phone_number">Enter your phone number</string>
     <string name="register">Register</string>
-    <string name="phone_number">Phone number</string>
     <string name="close">Close</string>
     <string name="center_dialog_text">Center dialog text</string>
     <string name="error">Error</string>
@@ -75,6 +74,9 @@
     <string name="quantity_n_a">Quantity: N/A</string>
     <string name="price_unknown">Price: Unknown</string>
     <string name="order_items">Order items</string>
+    <string name="your_shipping_address">Your shipping address</string>
+    <string name="shipping_address">Shipping address</string>
+    <string name="phone_number">Phone number</string>
 
     <string-array name="categories">
         <item>All</item>

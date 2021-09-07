@@ -31,8 +31,7 @@
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
         android:drawableTint="@color/accentColor"
-        android:backgroundTint="@color/gColor4"
-        />
+        android:backgroundTint="@color/gColor4"/>
 
     <EditText
         android:id="@+id/password_field_login"
@@ -55,8 +54,7 @@
         app:layout_constraintHorizontal_bias=".5"
         android:layout_marginTop="20dp"
         android:drawableTint="@color/accentColor"
-        android:backgroundTint="@color/gColor4"
-        />
+        android:backgroundTint="@color/gColor4"/>
 
     <Button
         android:id="@+id/loginButton"
@@ -72,8 +70,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:background="@drawable/button_bg"
-        />
+        android:background="@drawable/button_bg"/>
 
     <TextView
         android:id="@+id/forgotPass"
@@ -103,7 +100,6 @@
         app:layout_constraintBottom_toTopOf="@id/loginButton"
         app:layout_constraintTop_toBottomOf="@id/forgotPass"
         android:textColor="@color/teal_200"
-        android:buttonTint="@color/accentColor"
-        />
+        android:buttonTint="@color/accentColor"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

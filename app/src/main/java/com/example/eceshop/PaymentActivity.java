@@ -13,15 +13,21 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
+import android.telephony.PhoneNumberUtils;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,6 +36,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -41,6 +48,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.hbb20.CountryCodePicker;
 import com.stripe.android.ApiResultCallback;
 import com.stripe.android.PaymentIntentResult;
 import com.stripe.android.Stripe;
@@ -73,6 +81,7 @@ import okhttp3.internal.cache.DiskLruCache;
 
 public class PaymentActivity extends AppCompatActivity
 {
+    
     private static final String BACKEND_URL = "http://192.168.1.104:4242/";
     private static final String PUBLISHABLE_KEY = "pk_test_51JVv5lGfuf9wZawU43O2I3f7KDT01SDh2LeKBTKOUs656H4s5vTJ0dndQaEON3TyOilFcbP1qCcQCNmVUqglzU3Q00qaQ7TiR8";
     private static final String SELECT_OPTION = "com.example.eceshop.OPTION";
@@ -83,15 +92,24 @@ public class PaymentActivity extends AppCompatActivity
     private AppCompatButton payButton;
     private TextView totalAmountTextView;
     private RecyclerView preordersRecyclerView;
+    private TextInputEditText addressTextView;
+    private TextInputEditText phoneTextView;
+    private CountryCodePicker countryCodePicker;
 
     private PreordersRecyclerViewAdapter preordersAdapter;
     private CartItem model;
     private ArrayList<CartItem> model_array;
     private double totalPrice;
+    private String address;
+    private String phone;
+    private String country;
+    private String paymentMethodId;
+    private String paymentId;
     private String userId;
     private String orderId;
     private boolean checkFlag;
     private boolean refreshCart;
+    private boolean shouldUpdateUser;
 
     private static AlertDialog progressDialog;
 
@@ -99,6 +117,7 @@ public class PaymentActivity extends AppCompatActivity
     private String paymentIntentClientSecret;
     private OkHttpClient httpClient;
     private FirebaseDatabase database;
+    private Geocoder geocoder;
 
     private static final String BUTTON_KEY = "com.example.eceshop.INTENT_ORIGIN";
     private static final String DATA = "com.example.eceshop.DATA_KEY";
@@ -122,6 +141,9 @@ public class PaymentActivity extends AppCompatActivity
         payButton = findViewById(R.id.payButton);
         totalAmountTextView = findViewById(R.id.totalAmountTextView);
         preordersRecyclerView = findViewById(R.id.preOrderRecyclerView);
+        addressTextView = findViewById(R.id.addressInput);
+        countryCodePicker = findViewById(R.id.paymentCountryCode);
+        phoneTextView = findViewById(R.id.paymentPhoneInput);
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back_arrow);
@@ -129,10 +151,13 @@ public class PaymentActivity extends AppCompatActivity
 
         changeStatusBarColor();
 
+        geocoder = new Geocoder(this);
+
         totalPrice = 0.0d;
         orderId = "";
         checkFlag = false;
         refreshCart = false;
+        shouldUpdateUser = false;
         database = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         userId = user.getUid();
@@ -146,6 +171,26 @@ public class PaymentActivity extends AppCompatActivity
                 .setContext(this)
                 .setCancelable(false).setTheme(R.style.CustomProgressDialog)
                 .build();
+
+        phoneTextView.setOnEditorActionListener(new TextView.OnEditorActionListener()
+        {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
+            {
+                if (actionId == EditorInfo.IME_ACTION_DONE)
+                {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    View focusedView = getCurrentFocus();
+                    if (focusedView != null)
+                    {
+                        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                        phoneTextView.clearFocus();
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
 
         container.setOnTouchListener(new View.OnTouchListener()
         {
@@ -161,6 +206,18 @@ public class PaymentActivity extends AppCompatActivity
                     if(checkFocusRec(cardInputWidget))
                     {
                         clearFocus(cardInputWidget);
+                    }
+                    else if(countryCodePicker.isFocused())
+                    {
+                        countryCodePicker.clearFocus();
+                    }
+                    else if(addressTextView.isFocused())
+                    {
+                        addressTextView.clearFocus();
+                    }
+                    else if(phoneTextView.isFocused())
+                    {
+                        phoneTextView.clearFocus();
                     }
                     return true;
                 }
@@ -196,7 +253,7 @@ public class PaymentActivity extends AppCompatActivity
 
         DatabaseReference firstRef = database.getReference("Orders").child(userId).getRef();
         orderId = firstRef.push().getKey();
-        initializeClientSecret();
+        getIntentData();
     }
 
     private void getIntentData()
@@ -209,8 +266,9 @@ public class PaymentActivity extends AppCompatActivity
             totalPrice = model.getPrice()*model.getQuantity();
             String toSet = String.valueOf(totalPrice) + "$";
             totalAmountTextView.setText(toSet);
-            progressDialog.dismiss();
             preordersAdapter.notifyDataSetChanged();
+            progressDialog.show();
+            getUserInfo();
         }
         else if(origin.equals("orderAll"))
         {
@@ -252,31 +310,6 @@ public class PaymentActivity extends AppCompatActivity
         }
     }
 
-    private void initializeClientSecret()
-    {
-        MediaType mediaType = MediaType.get("application/json; charset=utf-8");
-
-        Map<String,Object> payMap = new HashMap<>();
-        Map<String,Object> itemMap = new HashMap<>();
-        List<Map<String,Object>> itemList = new ArrayList<>();
-        payMap.put("currency","usd");
-        itemMap.put("id", orderId);
-        itemMap.put("amount", totalPrice);
-        itemList.add(itemMap);
-        payMap.put("items",itemList);
-
-        String json = new Gson().toJson(payMap);
-        RequestBody body = RequestBody.create(json, mediaType);
-        Request request = new Request.Builder()
-                .url(BACKEND_URL + "create-payment-intent")
-                .post(body)
-                .build();
-        httpClient.newCall(request)
-                .enqueue(new PayCallback(this));
-
-        getIntentData();
-    }
-
     private void processList(List<CartItem> items)
     {
         List<CartItem> toAdd = new ArrayList<>();
@@ -298,25 +331,114 @@ public class PaymentActivity extends AppCompatActivity
         }
         String toSet = String.valueOf(totalPrice) + "$";
         totalAmountTextView.setText(toSet);
-        progressDialog.dismiss();
         for(CartItem m : items)
         {
             model_array.add(m);
         }
         preordersAdapter.notifyDataSetChanged();
+        getUserInfo();
     }
+
+    private void getUserInfo()
+    {
+        DatabaseReference ref = database.getReference("Users");
+        DatabaseReference childRef = ref.child(userId).getRef();
+        childRef.addListenerForSingleValueEvent(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot)
+            {
+                User u = snapshot.getValue(User.class);
+                if(u != null)
+                {
+                    String number = u.getPhoneNumber();
+                    if(number.equals("N/A"))
+                    {
+                        shouldUpdateUser = true;
+                        progressDialog.dismiss();
+                        initializeClientSecret();
+                    }
+                    else
+                    {
+                        String[] numArr = number.split("-");
+                        countryCodePicker.setCountryForPhoneCode(Integer.parseInt(numArr[0]));
+                        phoneTextView.setText(numArr[1]);
+                        progressDialog.dismiss();
+                        initializeClientSecret();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error)
+            {
+                progressDialog.dismiss();
+                CustomDialog dialog = new CustomDialog(PaymentActivity.this, "Database/Network error", error.getMessage(), false);
+                dialog.show();
+            }
+        });
+    }
+
+    private void initializeClientSecret()
+    {
+        MediaType mediaType = MediaType.get("application/json; charset=utf-8");
+
+        Map<String,Object> payMap = new HashMap<>();
+        Map<String,Object> itemMap = new HashMap<>();
+        List<Map<String,Object>> itemList = new ArrayList<>();
+        payMap.put("currency","usd");
+        itemMap.put("id", orderId);
+        itemMap.put("amount", totalPrice);
+        itemList.add(itemMap);
+        payMap.put("items", itemList);
+
+        String json = new Gson().toJson(payMap);
+        RequestBody body = RequestBody.create(json, mediaType);
+        Request request = new Request.Builder()
+                .url(BACKEND_URL + "create-payment-intent")
+                .post(body)
+                .build();
+        httpClient.newCall(request)
+                .enqueue(new PayCallback(this));
+    }
+
 
     private void performTransaction()
     {
+        address = addressTextView.getText().toString();
+        String phoneNum = phoneTextView.getText().toString();
+        phone = countryCodePicker.getSelectedCountryCode() + "-" + phoneNum;
+        country = countryCodePicker.getSelectedCountryName();
         PaymentMethodCreateParams input = cardInputWidget.getPaymentMethodCreateParams();
+        boolean flag = checkAddress(address);
         if(totalPrice == 0.0d || model_array.size() == 0)
         {
+            phone = "";
             CustomDialog dialog = new CustomDialog(PaymentActivity.this, "Database/Network error", "No products are present to perform a transaction.", false);
             dialog.show();
         }
         else if(input == null)
         {
+            phone = "";
             CustomDialog dialog = new CustomDialog(PaymentActivity.this, "Input error", "Please fill in your credit card details.", false);
+            dialog.show();
+        }
+        else if(TextUtils.isEmpty(phoneNum))
+        {
+            phone = "";
+            CustomDialog dialog = new CustomDialog(PaymentActivity.this, "Input error", "Please fill in your phone number.", false);
+            dialog.show();
+        }
+        else if((!PhoneNumberUtils.isGlobalPhoneNumber(countryCodePicker.getSelectedCountryCodeWithPlus() + phoneNum)) || phoneNum.length() != 8)
+        {
+            phone = "";
+            CustomDialog dialog = new CustomDialog(PaymentActivity.this, "Input error", "Please provide a valid phone number.", false);
+            dialog.show();
+        }
+        else if(flag)
+        {
+            phone = "";
+            CustomDialog dialog = new CustomDialog(PaymentActivity.this, "Input error", "Please provide a valid shipping address.", false);
             dialog.show();
         }
         else
@@ -328,6 +450,35 @@ public class PaymentActivity extends AppCompatActivity
                 idList.add(t.getProductId());
             }
             checkInStock(idList);
+        }
+    }
+
+    //samo za osnovna proverka na nevalidni vlezovi, potreben e web servis za vistinska temelna proverka
+    private boolean checkAddress(String addr)
+    {
+        if(TextUtils.isEmpty(addr))
+        {
+            return true;
+        }
+        else
+        {
+            try
+            {
+                List<Address> results = geocoder.getFromLocationName(addr, 1);
+                if(results.size() == 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (IOException e)
+            {
+                Log.e("ERR", e.getLocalizedMessage());
+                return true;
+            }
         }
     }
 
@@ -352,6 +503,9 @@ public class PaymentActivity extends AppCompatActivity
         DatabaseReference secondRef = database.getReference("Orders").child(userId).child(orderId).getRef();
         final HashMap<String, Object> ordersMap = new HashMap<>();
         ordersMap.put("Timestamp", System.currentTimeMillis());
+        ordersMap.put("Address", address);
+        ordersMap.put("PaymentMethodId", paymentMethodId);
+        ordersMap.put("PaymentId", paymentId);
         secondRef.updateChildren(ordersMap).addOnCompleteListener(new OnCompleteListener<Void>()
         {
             @Override
@@ -363,8 +517,12 @@ public class PaymentActivity extends AppCompatActivity
                     final HashMap<String, Object> idMap = new HashMap<>();
                     for(CartItem t : model_array)
                     {
-                        double price = t.getQuantity()*t.getPrice();
-                        idMap.put(t.getProductId(), price);
+                        double price = t.getPrice();
+                        int quantity = t.getQuantity();
+                        HashMap<String, Object> map = new HashMap<>();
+                        map.put("price", price);
+                        map.put("quantity", quantity);
+                        idMap.put(t.getProductId(), map);
                     }
                     thirdRef.updateChildren(idMap).addOnCompleteListener(new OnCompleteListener<Void>()
                     {
@@ -634,12 +792,19 @@ public class PaymentActivity extends AppCompatActivity
     {
         if(list.size() == 0)
         {
-            progressDialog.dismiss();
-            Intent intent = new Intent(PaymentActivity.this, HomeActivity.class);
-            intent.putExtra(SELECT_OPTION, "Orders");
-            startActivity(intent);
-            CustomIntent.customType(PaymentActivity.this, "right-to-left");
-            finish();
+            if(shouldUpdateUser)
+            {
+                updateUser();
+            }
+            else
+            {
+                progressDialog.dismiss();
+                Intent intent = new Intent(PaymentActivity.this, HomeActivity.class);
+                intent.putExtra(SELECT_OPTION, "Orders");
+                startActivity(intent);
+                CustomIntent.customType(PaymentActivity.this, "right-to-left");
+                finish();
+            }
             return;
         }
         DatabaseReference re = ref.child(list.remove(0)).getRef();
@@ -687,6 +852,37 @@ public class PaymentActivity extends AppCompatActivity
                 progressDialog.dismiss();
                 CustomDialog dialog = new CustomDialog(PaymentActivity.this, "Database/Network error", error.getMessage(), false);
                 dialog.show();
+            }
+        });
+    }
+
+    private void updateUser()
+    {
+        DatabaseReference ref = database.getReference("Users");
+        DatabaseReference childRef = ref.child(userId).getRef();
+        final HashMap<String, Object> map = new HashMap<>();
+        map.put("phoneNumber", phone);
+        map.put("country", country);
+        childRef.updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>()
+        {
+            @Override
+            public void onComplete(@NonNull Task<Void> task)
+            {
+                if(task.isSuccessful())
+                {
+                    progressDialog.dismiss();
+                    Intent intent = new Intent(PaymentActivity.this, HomeActivity.class);
+                    intent.putExtra(SELECT_OPTION, "Orders");
+                    startActivity(intent);
+                    CustomIntent.customType(PaymentActivity.this, "right-to-left");
+                    finish();
+                }
+                else
+                {
+                    progressDialog.dismiss();
+                    CustomDialog dialog = new CustomDialog(PaymentActivity.this, "Database/Network error", task.getException().getMessage(), false);
+                    dialog.show();
+                }
             }
         });
     }
@@ -867,9 +1063,7 @@ public class PaymentActivity extends AppCompatActivity
             if (!response.isSuccessful())
             {
                 activity.runOnUiThread(() ->
-                        Toast.makeText(
-                                activity, "Error: " + response.toString(), Toast.LENGTH_LONG
-                        ).show()
+                        activity.displayAlert("Error", response.message(), true)
                 );
             }
             else
@@ -900,13 +1094,15 @@ public class PaymentActivity extends AppCompatActivity
             PaymentIntent.Status status = paymentIntent.getStatus();
             if (status == PaymentIntent.Status.Succeeded)
             {
+                activity.setPaymentMethodId(paymentIntent.getPaymentMethodId());
+                activity.setPaymentId(paymentIntent.getId());
                 activity.continueWithTransactionAfterPayment();
             }
             else if (status == PaymentIntent.Status.RequiresPaymentMethod)
             {
                 activity.displayAlert(
                         "Payment failed",
-                        Objects.requireNonNull(paymentIntent.getLastPaymentError()).getMessage()
+                        Objects.requireNonNull(paymentIntent.getLastPaymentError()).getMessage(), false
                 );
             }
         }
@@ -919,12 +1115,16 @@ public class PaymentActivity extends AppCompatActivity
             {
                 return;
             }
-            activity.displayAlert("Error", e.toString());
+            activity.displayAlert("Error", e.toString(), false);
         }
     }
 
-    private void displayAlert(@NonNull String title, @Nullable String message)
+    private void displayAlert(@NonNull String title, @Nullable String message, boolean disable)
     {
+        if(disable)
+        {
+            payButton.setEnabled(false);
+        }
         if(title != null && message != null)
         {
             CustomDialog dialog = new CustomDialog(this, title, message, false);
@@ -935,6 +1135,16 @@ public class PaymentActivity extends AppCompatActivity
             CustomDialog dialog = new CustomDialog(this, "Unknown error", "The reason and details behind this error are unknown.", false);
             dialog.show();
         }
+    }
+
+    public void setPaymentMethodId(String id)
+    {
+        paymentMethodId = id;
+    }
+
+    public void setPaymentId(String id)
+    {
+        paymentId = id;
     }
 
 }

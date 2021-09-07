@@ -116,6 +116,97 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:id="@+id/address_layout"
+            android:hint="@string/shipping_address"
+            app:endIconDrawable="@drawable/ic_delete"
+            app:boxStrokeColor="#042382"
+            app:startIconDrawable="@drawable/ic_location"
+            app:startIconTint="@color/mainTextColor"
+            app:boxStrokeWidth="1dp"
+            app:endIconTint="@color/mainTextColor"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            app:endIconMode="clear_text"
+            app:layout_constraintTop_toBottomOf="@+id/cardInputWidget"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPostalAddress"
+                android:maxLines="1"
+                android:layout_weight="1"
+                android:maxLength="50"
+                android:theme="@style/Autocomplete"
+                android:id="@+id/addressInput"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/phoneAndCountryContainer"
+            android:orientation="horizontal"
+            android:weightSum="100"
+            android:gravity="center"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            app:layout_constraintTop_toBottomOf="@+id/address_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.hbb20.CountryCodePicker
+                android:id="@+id/paymentCountryCode"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="30"
+                android:gravity="center"
+                android:layout_gravity="center"
+                app:ccp_autoDetectCountry="true"
+                app:ccp_showPhoneCode="true"
+                app:ccp_showFlag="true"
+                app:ccp_showFullName="false"
+                app:ccp_showNameCode="false"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:id="@+id/phone_layout"
+                android:layout_weight="70"
+                android:hint="@string/phone_number"
+                app:endIconDrawable="@drawable/ic_delete"
+                app:boxStrokeColor="#042382"
+                app:startIconDrawable="@drawable/ic_phone"
+                app:startIconTint="@color/mainTextColor"
+                app:boxStrokeWidth="1dp"
+                app:endIconTint="@color/mainTextColor"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                app:endIconMode="clear_text">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="phone"
+                    android:maxLines="1"
+                    android:layout_weight="1"
+                    android:imeOptions="actionDone"
+                    android:maxLength="8"
+                    android:theme="@style/Autocomplete"
+                    android:id="@+id/paymentPhoneInput"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/payButton"
             android:layout_marginStart="10dp"
@@ -132,9 +223,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
             android:text="@string/make_payment"
-            app:layout_constraintEnd_toEndOf="@+id/cardInputWidget"
-            app:layout_constraintStart_toStartOf="@+id/cardInputWidget"
-            app:layout_constraintTop_toBottomOf="@+id/cardInputWidget"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/phoneAndCountryContainer"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -171,7 +262,7 @@
             android:layout_marginBottom="5dp"
             android:id="@+id/preOrderRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="255dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/separator_below_btn"/>

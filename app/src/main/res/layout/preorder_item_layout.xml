@@ -19,9 +19,9 @@
         android:id="@+id/preorderItemName"
         android:layout_gravity="center_vertical"
         android:textSize="16sp"
-        android:layout_weight="50"
+        android:layout_weight="60"
         android:textStyle="bold"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:textColor="#173797"
         android:layout_marginEnd="5dp"
         android:fontFamily="sans-serif-medium"
@@ -29,9 +29,9 @@
         android:text="@string/product_s_name"/>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="50"
+        android:layout_weight="40"
         android:layout_gravity="center_vertical"
         android:orientation="vertical">
 
@@ -41,7 +41,7 @@
             android:textSize="14sp"
             android:layout_marginBottom="5dp"
             android:layout_marginTop="5dp"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:textColor="#173797"
             android:layout_marginStart="10dp"
             android:fontFamily="sans-serif-condensed-light"
@@ -51,7 +51,7 @@
         <TextView
             android:id="@+id/preorderItemQuantity"
             android:layout_gravity="bottom"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:fontFamily="sans-serif-smallcaps"

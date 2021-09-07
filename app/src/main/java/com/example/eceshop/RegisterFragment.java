@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
@@ -130,7 +131,7 @@ public class RegisterFragment extends Fragment {
         String pEmail = email.getText().toString();
         String pPass = password.getText().toString();
         String pConfirmPass = confirmPass.getText().toString();
-        String phoneNumber = countryCode.getSelectedCountryCode() + phone.getText().toString();
+        String phoneNumber = countryCode.getSelectedCountryCode() + "-" + phone.getText().toString();
         String countryName = countryCode.getSelectedCountryName();
         if(TextUtils.isEmpty(pName))
         {
@@ -155,6 +156,11 @@ public class RegisterFragment extends Fragment {
         else if(TextUtils.isEmpty(phone.getText().toString()))
         {
             CustomDialog dialog = new CustomDialog(ctx, "Register error", "Please provide your phone number.", false);
+            dialog.show();
+        }
+        else if((!PhoneNumberUtils.isGlobalPhoneNumber(countryCode.getSelectedCountryCodeWithPlus() + phone.getText().toString())) || phone.getText().toString().length() != 8)
+        {
+            CustomDialog dialog = new CustomDialog(ctx, "Register error", "Please provide a valid phone number.", false);
             dialog.show();
         }
         else if(!(pPass.equals(pConfirmPass)))
