@@ -58,7 +58,8 @@ import java.util.List;
 import dmax.dialog.SpotsDialog;
 import maes.tech.intentanim.CustomIntent;
 
-public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnItemSelectedListener, DashboardFragment.DashboardFragmentTouchListener, CartFragment.CartFragmentTouchListener
+public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnItemSelectedListener, DashboardFragment.DashboardFragmentTouchListener,
+        CartFragment.CartFragmentTouchListener, OrdersFragment.OrdersFragmentTouchListener
 {
 
     private FirebaseAuth mAuth;
@@ -667,6 +668,12 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
 
     @Override
     public void onCartFragmentTouch()
+    {
+        resetInput(searchView);
+    }
+
+    @Override
+    public void onOrdersFragmentTouch()
     {
         resetInput(searchView);
     }

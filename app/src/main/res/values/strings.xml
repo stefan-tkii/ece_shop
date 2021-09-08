@@ -77,6 +77,15 @@
     <string name="your_shipping_address">Your shipping address</string>
     <string name="shipping_address">Shipping address</string>
     <string name="phone_number">Phone number</string>
+    <string name="list_of_orders">List of orders</string>
+    <string name="you_don_t_have_any_orders_yet">You don\'t have any orders yet.</string>
+    <string name="order_id">Order id</string>
+    <string name="address_of_order">Address of order</string>
+    <string name="price_total_2000">Price total: 2000$</string>
+    <string name="status">Status:</string>
+    <string name="active">Active</string>
+    <string name="ordered_at_20_02_2012">Ordered at: 20/02/2012</string>
+    <string name="you_don_t_have_any_orders_of_this_sort_yet">You don\'t have any orders of this sort yet.</string>
 
     <string-array name="categories">
         <item>All</item>
@@ -98,6 +107,14 @@
     <string-array name="sortsComments">
         <item>Latest</item>
         <item>Oldest</item>
+    </string-array>
+
+    <string-array name="sortOrders">
+        <item>Latest</item>
+        <item>Oldest</item>
+        <item>Status: Completed</item>
+        <item>Status: Ongoing</item>
+        <item>Status: Cancelled</item>
     </string-array>
 
 </resources>

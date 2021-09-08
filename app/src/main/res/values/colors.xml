@@ -20,4 +20,5 @@
     <color name="mainTitleColor">#057a94</color>
     <color name="add_cart_color">#5ED899</color>
     <color name="yesColor">#2DDA0F</color>
+    <color name="pendingColor">#C6A529</color>
 </resources>

@@ -82,7 +82,7 @@ import okhttp3.internal.cache.DiskLruCache;
 public class PaymentActivity extends AppCompatActivity
 {
     
-    private static final String BACKEND_URL = "http://192.168.1.104:4242/";
+    private static final String BACKEND_URL = "http://192.168.1.106:4242/";
     private static final String PUBLISHABLE_KEY = "pk_test_51JVv5lGfuf9wZawU43O2I3f7KDT01SDh2LeKBTKOUs656H4s5vTJ0dndQaEON3TyOilFcbP1qCcQCNmVUqglzU3Q00qaQ7TiR8";
     private static final String SELECT_OPTION = "com.example.eceshop.OPTION";
 
@@ -502,10 +502,11 @@ public class PaymentActivity extends AppCompatActivity
     {
         DatabaseReference secondRef = database.getReference("Orders").child(userId).child(orderId).getRef();
         final HashMap<String, Object> ordersMap = new HashMap<>();
-        ordersMap.put("Timestamp", System.currentTimeMillis());
-        ordersMap.put("Address", address);
-        ordersMap.put("PaymentMethodId", paymentMethodId);
-        ordersMap.put("PaymentId", paymentId);
+        ordersMap.put("timestamp", System.currentTimeMillis());
+        ordersMap.put("address", address);
+        ordersMap.put("status", "Ongoing");
+        ordersMap.put("paymentMethodId", paymentMethodId);
+        ordersMap.put("paymentId", paymentId);
         secondRef.updateChildren(ordersMap).addOnCompleteListener(new OnCompleteListener<Void>()
         {
             @Override
@@ -513,7 +514,7 @@ public class PaymentActivity extends AppCompatActivity
             {
                 if(task.isSuccessful())
                 {
-                    DatabaseReference thirdRef = database.getReference("Orders").child(userId).child(orderId).child("Products").getRef();
+                    DatabaseReference thirdRef = database.getReference("Orders").child(userId).child(orderId).child("products").getRef();
                     final HashMap<String, Object> idMap = new HashMap<>();
                     for(CartItem t : model_array)
                     {
