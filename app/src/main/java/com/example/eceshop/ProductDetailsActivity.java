@@ -66,6 +66,8 @@ public class ProductDetailsActivity extends AppCompatActivity
 {
 
     private static final String CLICKED_KEY = "com.example.eceshop.CLICKED_PRODUCT";
+    private static final String ORIGIN_KEY = "com.example.eceshop.ORIGIN_KEY";
+
     private Product model;
     private Toolbar toolbar;
     private AlertDialog progressDialog;
@@ -105,6 +107,7 @@ public class ProductDetailsActivity extends AppCompatActivity
     private String userKey;
     private static final int BATCH_SIZE = 3;
     private boolean running;
+    private boolean origin;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -430,6 +433,7 @@ public class ProductDetailsActivity extends AppCompatActivity
         categoryTitles = loadCategoryTitles();
 
         model = getIntent().getParcelableExtra(CLICKED_KEY);
+        origin = getIntent().getBooleanExtra(ORIGIN_KEY, false);
 
         placeholderTextView.setVisibility(View.GONE);
         loadBar.setVisibility(View.VISIBLE);
@@ -828,11 +832,22 @@ public class ProductDetailsActivity extends AppCompatActivity
         switch (item.getItemId())
         {
             case android.R.id.home:
-                Intent intent = new Intent(ProductDetailsActivity.this, HomeActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                CustomIntent.customType(ProductDetailsActivity.this, "right-to-left");
-                finish();
+                if(origin)
+                {
+                    Intent intent = new Intent(ProductDetailsActivity.this, OrderDetailsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    CustomIntent.customType(ProductDetailsActivity.this, "right-to-left");
+                    finish();
+                }
+                else
+                {
+                    Intent intent = new Intent(ProductDetailsActivity.this, HomeActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    CustomIntent.customType(ProductDetailsActivity.this, "right-to-left");
+                    finish();
+                }
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -876,11 +891,22 @@ public class ProductDetailsActivity extends AppCompatActivity
     @Override
     public void onBackPressed()
     {
-        Intent intent = new Intent(ProductDetailsActivity.this, HomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(intent);
-        CustomIntent.customType(ProductDetailsActivity.this, "right-to-left");
-        finish();
+        if(origin)
+        {
+            Intent intent = new Intent(ProductDetailsActivity.this, OrderDetailsActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            CustomIntent.customType(ProductDetailsActivity.this, "right-to-left");
+            finish();
+        }
+        else
+        {
+            Intent intent = new Intent(ProductDetailsActivity.this, HomeActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            CustomIntent.customType(ProductDetailsActivity.this, "right-to-left");
+            finish();
+        }
     }
 
     private void changeStatusBarColor()

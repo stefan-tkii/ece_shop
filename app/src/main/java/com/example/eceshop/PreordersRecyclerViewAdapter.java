@@ -19,11 +19,22 @@ public class PreordersRecyclerViewAdapter extends RecyclerView.Adapter<Preorders
     private List<CartItem> items;
     private Context context;
     private int lastPosition = -1;
+    private OnItemClickListener mListener;
 
     public PreordersRecyclerViewAdapter(List<CartItem> items, Context context)
     {
         this.items = items;
         this.context = context;
+    }
+
+    public interface OnItemClickListener
+    {
+        void OnItemClick(int position);
+    }
+
+    public void setOnProductClickListener(OnItemClickListener listener)
+    {
+        mListener = listener;
     }
 
     @NonNull
@@ -46,6 +57,18 @@ public class PreordersRecyclerViewAdapter extends RecyclerView.Adapter<Preorders
         String price = "Price: " + total + "$";
         holder.preorderPriceTextView.setText(price);
         setAnimation(holder.itemView, position);
+
+        holder.container.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if(mListener != null)
+                {
+                    mListener.OnItemClick(position);
+                }
+            }
+        });
     }
 
     @Override

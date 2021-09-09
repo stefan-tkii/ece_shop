@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white"
+    android:id="@+id/complexDialogContainer">
+
+    <ImageView
+        android:id="@+id/topImageComplexDialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/info_icon"/>
+
+    <TextView
+        android:id="@+id/topComplexDialogText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/error"
+        android:textColor="@android:color/black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topImageComplexDialog"/>
+
+    <TextView
+        android:id="@+id/centerComplexDialogText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/center_dialog_text"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topComplexDialogText"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="30dp"
+        android:weightSum="100"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/centerComplexDialogText">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/cancelDialogButton"
+            android:layout_width="0dp"
+            android:layout_marginEnd="2dp"
+            android:layout_weight="50"
+            android:layout_height="wrap_content"
+            android:stateListAnimator="@null"
+            android:text="@string/close"
+            android:textSize="16sp"
+            android:textAllCaps="false"
+            android:textColor="@color/black"
+            android:background="@drawable/complex_dialog_cancel_btn_bg"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/proceedDialogButton"
+            android:layout_width="0dp"
+            android:layout_weight="50"
+            android:layout_height="wrap_content"
+            android:stateListAnimator="@null"
+            android:text="@string/proceed"
+            android:textSize="16sp"
+            android:layout_marginStart="2dp"
+            android:textAllCaps="false"
+            android:textColor="@color/black"
+            android:background="@drawable/complex_dialog_btn_bg"/>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

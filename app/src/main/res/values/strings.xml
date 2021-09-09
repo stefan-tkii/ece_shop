@@ -86,6 +86,15 @@
     <string name="active">Active</string>
     <string name="ordered_at_20_02_2012">Ordered at: 20/02/2012</string>
     <string name="you_don_t_have_any_orders_of_this_sort_yet">You don\'t have any orders of this sort yet.</string>
+    <string name="order_details">Order details</string>
+    <string name="address_n_a">Address: N/A</string>
+    <string name="random_order_id">Random order ID</string>
+    <string name="total_amount_2000">Total amount: 2000$</string>
+    <string name="cancelled">Cancelled</string>
+    <string name="ordered_at_09_08_2002">Ordered at: 09/08/2002</string>
+    <string name="estimated_arrival_time_40_days">Estimated arrival time: 40 days</string>
+    <string name="cancel_order">Cancel order</string>
+    <string name="proceed">Proceed</string>
 
     <string-array name="categories">
         <item>All</item>

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:background="@android:color/white"
+    android:background="@drawable/aa"
     tools:context=".OrderDetailsActivity"
     android:id="@+id/order_details_container">
 
@@ -18,5 +18,268 @@
         android:id="@+id/order_details_toolbar"
         android:background="#042382"
         app:titleTextColor="@color/mainTextColor"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/top_Orders_Constrainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/order_details_toolbar"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/orders_top_Txt"
+            android:text="@string/order_details"
+            app:layout_constraintHorizontal_bias="0.0"
+            android:textStyle="bold"
+            android:textSize="22sp"
+            android:layout_marginStart="10dp"
+            android:textAlignment="textStart"
+            android:textColor="@color/black"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/orders_dec_img"/>
+
+        <ImageView
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:id="@+id/orders_dec_img"
+            android:src="@drawable/paytop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_marginStart="2dp"
+        android:layout_marginEnd="2dp"
+        android:background="@drawable/input_payment_bg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/top_Orders_Constrainer">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/order_details_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="5dp"
+            app:strokeColor="#042382"
+            app:strokeWidth="5dp"
+            app:cardUseCompatPadding="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="center">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:gravity="fill_horizontal"
+                    android:orientation="horizontal"
+                    android:weightSum="100">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="4dp"
+                        android:layout_weight="60"
+                        android:id="@+id/order_details_id"
+                        android:fontFamily="sans-serif-condensed"
+                        android:textColor="#173797"
+                        android:gravity="start"
+                        android:text="@string/random_order_id"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="5dp"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_marginStart="5dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="40"
+                        android:layout_gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-smallcaps"
+                            android:gravity="start"
+                            android:textColor="@color/black"
+                            android:id="@+id/order_details_price"
+                            android:text="@string/total_amount_2000"
+                            android:textSize="14sp"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:textColor="@color/black"
+                                android:fontFamily="sans-serif-smallcaps"
+                                android:text="@string/status"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="2dp"
+                                android:text="@string/cancelled"
+                                android:id="@+id/order_details_status"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:textColor="#2DDA0F"
+                                android:fontFamily="sans-serif-smallcaps"/>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/order_details_separator"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@android:color/darker_gray"/>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    app:cardUseCompatPadding="true"
+                    app:cardBackgroundColor="#D9DFE1"
+                    app:cardCornerRadius="5dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="2dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:id="@+id/order_details_address"
+                        android:gravity="fill"
+                        android:text="@string/address_n_a"
+                        android:textColor="@color/black"
+                        android:textSize="14sp" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:orientation="horizontal"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:weightSum="100">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_weight="40"
+                        android:textSize="14sp"
+                        android:fontFamily="serif"
+                        android:textColor="@android:color/darker_gray"
+                        android:id="@+id/order_details_date"
+                        android:text="@string/ordered_at_09_08_2002"/>
+
+                    <TextView
+                        android:id="@+id/order_details_eta"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="60"
+                        android:fontFamily="serif"
+                        android:text="@string/estimated_arrival_time_40_days"
+                        android:textAlignment="center"
+                        android:textColor="#173797"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/refundButton"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawableStart="@drawable/ic_close"
+            android:drawablePadding="2dp"
+            android:gravity="center"
+            android:paddingStart="80dp"
+            android:layout_marginTop="10dp"
+            android:drawableTint="@color/mainTextColor"
+            android:paddingEnd="80dp"
+            android:singleLine="true"
+            android:background="@drawable/add_cart_button_bg"
+            android:text="@string/cancel_order"
+            android:textColor="@color/mainTextColor"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/order_details_card"
+            android:textSize="15sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/order_items_textView"
+            android:text="@string/order_items"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            app:layout_constraintTop_toBottomOf="@id/refundButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="10dp"
+            android:textAlignment="textStart"
+            android:textColor="@color/black"
+            app:layout_constraintHorizontal_bias="0.0"
+            android:layout_marginStart="10dp"/>
+
+        <View
+            android:id="@+id/separator_cancel_btn"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/order_items_textView"
+            android:layout_marginTop="2dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:id="@+id/orderDetailsItems_RecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="375dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/separator_cancel_btn"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
