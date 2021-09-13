@@ -30,15 +30,22 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Objects;
 
 import dmax.dialog.SpotsDialog;
 import maes.tech.intentanim.CustomIntent;
 
-public class LoginFragment extends Fragment {
+public class LoginFragment extends Fragment
+{
 
     private static final String SHARED_PREFS = "com.example.eceshop.loginPreferences";
+    private static final String ADMIN_KEY = "com.example.eceshop.Admin";
     private static final String emailKey = "saved_email";
     private static final String passwordKey = "saved_password";
     private static final String markedKey = "rememberMe_status";
@@ -56,7 +63,8 @@ public class LoginFragment extends Fragment {
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.login_fragment, container, false);
         emailText = root.findViewById(R.id.email_field_login);
         passwordText = root.findViewById(R.id.password_field_login);
@@ -66,7 +74,8 @@ public class LoginFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         loginContainer = root.findViewById(R.id.login_container);
 
-        loginContainer.setOnTouchListener(new View.OnTouchListener() {
+        loginContainer.setOnTouchListener(new View.OnTouchListener()
+        {
             @SuppressLint("ClickableViewAccessibility")
             @Override
             public boolean onTouch(View v, MotionEvent event)
@@ -98,16 +107,19 @@ public class LoginFragment extends Fragment {
                 .setCancelable(false).setTheme(R.style.CustomProgressDialog)
                 .build();
 
-        loginButton.setOnClickListener(new View.OnClickListener() {
+        loginButton.setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View v) {
                 loginUser();
             }
         });
 
-        forgotPassword.setOnClickListener(new View.OnClickListener() {
+        forgotPassword.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 emailText.setText("");
                 passwordText.setText("");
                 Intent intent = new Intent(getActivityNonNull(), ResetPasswordActivity.class);
@@ -116,9 +128,11 @@ public class LoginFragment extends Fragment {
             }
         });
 
-        rememberMe.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        rememberMe.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
                 SharedPreferences prefs = getActivityNonNull().getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
                 if(isChecked)
@@ -159,22 +173,27 @@ public class LoginFragment extends Fragment {
         return root;
     }
 
-    protected FragmentActivity getActivityNonNull() {
-        if (super.getActivity() != null) {
+    protected FragmentActivity getActivityNonNull()
+    {
+        if (super.getActivity() != null)
+        {
             return super.getActivity();
-        } else {
+        }
+        else {
             throw new RuntimeException("null returned from getActivity()");
         }
     }
 
     @Override
-    public void onStart() {
+    public void onStart()
+    {
         super.onStart();
         checkPreferences();
     }
 
     @Override
-    public void onResume() {
+    public void onResume()
+    {
         super.onResume();
         checkPreferences();
     }
@@ -225,22 +244,21 @@ public class LoginFragment extends Fragment {
         else
         {
             progressDialog.show();
-            mAuth.signInWithEmailAndPassword(pEmail, pPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            mAuth.signInWithEmailAndPassword(pEmail, pPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>()
+            {
                 @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
+                public void onComplete(@NonNull Task<AuthResult> task)
+                {
                     if(task.isSuccessful())
                     {
-                        progressDialog.dismiss();
                         FirebaseUser user = mAuth.getCurrentUser();
                         if(user.isEmailVerified())
                         {
-                            Intent intent = new Intent(getActivityNonNull(), HomeActivity.class);
-                            startActivity(intent);
-                            CustomIntent.customType(getActivityNonNull(), "left-to-right");
-                            getActivityNonNull().finish();
+                            checkAdmin(user.getUid());
                         }
                         else
                         {
+                            progressDialog.dismiss();
                             FirebaseAuth.getInstance().signOut();
                             passwordText.setText("");
                             user.sendEmailVerification();
@@ -263,8 +281,63 @@ public class LoginFragment extends Fragment {
         }
     }
 
+    private void checkAdmin(String id)
+    {
+        FirebaseDatabase database = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
+        DatabaseReference mDatabase = database.getReference("Users");
+        DatabaseReference userRef = mDatabase.child(id).getRef();
+        userRef.addListenerForSingleValueEvent(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot)
+            {
+                User u = snapshot.getValue(User.class);
+                if(u != null)
+                {
+                    boolean admin = u.isAdmin();
+                    progressDialog.dismiss();
+                    if(admin)
+                    {
+                        Intent intent = new Intent(getActivityNonNull(), HomeActivity.class);
+                        intent.putExtra(ADMIN_KEY, true);
+                        startActivity(intent);
+                        CustomIntent.customType(getActivityNonNull(), "left-to-right");
+                        getActivityNonNull().finish();
+                    }
+                    else
+                    {
+                        Intent intent = new Intent(getActivityNonNull(), HomeActivity.class);
+                        startActivity(intent);
+                        CustomIntent.customType(getActivityNonNull(), "left-to-right");
+                        getActivityNonNull().finish();
+                    }
+                }
+                else
+                {
+                    FirebaseAuth.getInstance().signOut();
+                    progressDialog.dismiss();
+                    CustomDialog dialog = new CustomDialog(ctx, "Login error", "Failed to login. "
+                            + "Could not retrieve the login data.",
+                            false);
+                    dialog.show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error)
+            {
+                FirebaseAuth.getInstance().signOut();
+                CustomDialog dialog = new CustomDialog(ctx, "Login error", "Failed to login. "
+                        + error.getMessage(),
+                        false);
+                dialog.show();
+            }
+        });
+    }
+
     @Override
-    public void onAttach(@NonNull Context context) {
+    public void onAttach(@NonNull Context context)
+    {
         super.onAttach(context);
         this.ctx = context;
     }

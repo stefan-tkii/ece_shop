@@ -2,7 +2,8 @@ package com.example.eceshop;
 
 import android.view.ViewGroup;
 
-public abstract class DrawerItem<T extends DrawerAdapter.ViewHolder> {
+public abstract class DrawerItem<T extends DrawerAdapter.ViewHolder>
+{
 
     protected boolean isChecked;
 

@@ -95,6 +95,16 @@
     <string name="estimated_arrival_time_40_days">Estimated arrival time: 40 days</string>
     <string name="cancel_order">Cancel order</string>
     <string name="proceed">Proceed</string>
+    <string name="fill_in_the_details">Fill in the details</string>
+    <string name="short_description">Short description</string>
+    <string name="long_description">Long description</string>
+    <string name="select_a_category">Select a category</string>
+    <string name="jewelry">Jewelry</string>
+    <string name="price">Price</string>
+    <string name="stock">Stock</string>
+    <string name="add_product">Add product</string>
+    <string name="gallery">Gallery</string>
+    <string name="camera">Camera</string>
 
     <string-array name="categories">
         <item>All</item>
@@ -102,6 +112,17 @@
         <item>Accessories</item>
         <item>Hardware</item>
         <item>Devices</item>
+        <item>Miscellaneous</item>
+    </string-array>
+
+    <string-array name="productCategories">
+        <item>Clothes</item>
+        <item>Hardware</item>
+        <item>Devices</item>
+        <item>Books</item>
+        <item>Supplements</item>
+        <item>Accessories</item>
+        <item>Jewelry</item>
         <item>Miscellaneous</item>
     </string-array>
 

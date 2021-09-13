@@ -58,7 +58,8 @@ public class CartItemRecyclerViewAdapter extends RecyclerView.Adapter<CartItemRe
     public void onBindViewHolder(@NonNull CartItemViewHolder holder, int position)
     {
         CartItem model = items.get(position);
-        Picasso.get().load(model.getImgUri()).into(holder.itemImg);
+        Picasso.get().load(model.getImgUri()).placeholder(R.drawable.load_placeholder)
+                .into(holder.itemImg);
         holder.itemName.setText(model.getName());
         String price;
         int stock = model.getInStock();

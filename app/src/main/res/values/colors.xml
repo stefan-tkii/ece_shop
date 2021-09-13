@@ -21,4 +21,6 @@
     <color name="add_cart_color">#5ED899</color>
     <color name="yesColor">#2DDA0F</color>
     <color name="pendingColor">#C6A529</color>
+    <color name="productColor">#E040FB</color>
+    <color name="goldColor">#FFFF00</color>
 </resources>

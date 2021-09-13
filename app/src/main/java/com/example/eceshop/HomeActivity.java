@@ -59,7 +59,7 @@ import dmax.dialog.SpotsDialog;
 import maes.tech.intentanim.CustomIntent;
 
 public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnItemSelectedListener, DashboardFragment.DashboardFragmentTouchListener,
-        CartFragment.CartFragmentTouchListener, OrdersFragment.OrdersFragmentTouchListener
+        CartFragment.CartFragmentTouchListener, OrdersFragment.OrdersFragmentTouchListener, AddProductFragment.AddProductFragmentTouchListener
 {
 
     private FirebaseAuth mAuth;
@@ -71,10 +71,16 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     private static final int POS_SETTINGS = 5;
     private static final int POS_LOGOUT = 7;
 
+    private static final int POS_ADD_PRODUCT = 6;
+    private static final int POS_USERS = 7;
+    private static final int POS_ADMIN_LOGOUT = 9;
+
     private static final String SELECT_OPTION = "com.example.eceshop.OPTION";
+    private static final String ADMIN_KEY = "com.example.eceshop.Admin";
 
     TextView textNotificationsItemCount;
     int mNotificationsItemCount = 1;
+    private boolean admin;
 
     private boolean bundleStatus;
     private Bundle bundle;
@@ -101,7 +107,8 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     private long mBackPressed;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         showCustomUI();
@@ -123,9 +130,13 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
 
         selectedNavigation = -1;
 
-        authStateListener = new FirebaseAuth.AuthStateListener() {
+        admin = getIntent().getBooleanExtra(ADMIN_KEY, false);
+
+        authStateListener = new FirebaseAuth.AuthStateListener()
+        {
             @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth)
+            {
                 if (firebaseAuth.getCurrentUser() == null)
                 {
                     Intent intent = new Intent(HomeActivity.this, SigningActivity.class);
@@ -158,16 +169,34 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         screenIcons = loadScreenIcons();
         screenTitles = loadScreenTitles();
 
-        adapter = new DrawerAdapter(Arrays.asList(
-           createItemFor(POS_CLOSE),
-                createItemFor(POS_DASHBOARD).setChecked(true),
-                createItemFor(POS_CART),
-                createItemFor(POS_ORDERS),
-                createItemFor(POS_PROFILE),
-                createItemFor(POS_SETTINGS),
-                new SpaceItem(260),
-                createItemFor(POS_LOGOUT)
-        ));
+        if(admin)
+        {
+            adapter = new DrawerAdapter(Arrays.asList(
+                    createItemFor(POS_CLOSE),
+                    createItemFor(POS_DASHBOARD).setChecked(true),
+                    createItemFor(POS_CART),
+                    createItemFor(POS_ORDERS),
+                    createItemFor(POS_PROFILE),
+                    createItemFor(POS_SETTINGS),
+                    createItemFor(POS_ADD_PRODUCT),
+                    createItemFor(POS_USERS),
+                    new SpaceItem(260),
+                    createItemFor(POS_ADMIN_LOGOUT)
+            ));
+        }
+        else
+        {
+            adapter = new DrawerAdapter(Arrays.asList(
+                    createItemFor(POS_CLOSE),
+                    createItemFor(POS_DASHBOARD).setChecked(true),
+                    createItemFor(POS_CART),
+                    createItemFor(POS_ORDERS),
+                    createItemFor(POS_PROFILE),
+                    createItemFor(POS_SETTINGS),
+                    new SpaceItem(260),
+                    createItemFor(POS_LOGOUT)
+            ));
+        }
 
         adapter.setListener(this);
 
@@ -177,6 +206,7 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         list.setAdapter(adapter);
 
         String select = getIntent().getStringExtra(SELECT_OPTION);
+
         if(select == null)
         {
             adapter.setSelected(POS_DASHBOARD);
@@ -269,6 +299,14 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                     return true;
                 }
                 else if(selectedNavigation == POS_SETTINGS)
+                {
+                    bundle.putString("searchInput", "");
+                    bundleStatus = false;
+                    lastSearched = "";
+                    resetInput(searchView);
+                    return true;
+                }
+                else if(selectedNavigation == POS_ADD_PRODUCT)
                 {
                     bundle.putString("searchInput", "");
                     bundleStatus = false;
@@ -396,11 +434,11 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                 }
             }
             else {
-                    textNotificationsItemCount.setText(String.valueOf(Math.min(mNotificationsItemCount, 99)));
-                    if (textNotificationsItemCount.getVisibility() != View.VISIBLE)
-                    {
-                        textNotificationsItemCount.setVisibility(View.VISIBLE);
-                    }
+                textNotificationsItemCount.setText(String.valueOf(Math.min(mNotificationsItemCount, 99)));
+                if (textNotificationsItemCount.getVisibility() != View.VISIBLE)
+                {
+                    textNotificationsItemCount.setVisibility(View.VISIBLE);
+                }
             }
         }
         //open drop down list of notifications
@@ -481,12 +519,27 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
 
     private String[] loadScreenTitles()
     {
-        return getResources().getStringArray(R.array.id_activityScreenTitles);
+        if(admin)
+        {
+            return getResources().getStringArray(R.array.id_adminActivityScreenTitles);
+        }
+        else
+        {
+            return getResources().getStringArray(R.array.id_activityScreenTitles);
+        }
     }
 
     private Drawable[] loadScreenIcons()
     {
-        TypedArray ta = getResources().obtainTypedArray(R.array.id_activityScreenIcons);
+        TypedArray ta;
+        if(admin)
+        {
+            ta = getResources().obtainTypedArray(R.array.id_adminActivityScreenIcons);
+        }
+        else
+        {
+            ta = getResources().obtainTypedArray(R.array.id_activityScreenIcons);
+        }
         Drawable[] icons = new Drawable[ta.length()];
         for(int i=0;i<ta.length();i++)
         {
@@ -534,6 +587,18 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     @Override
     public void onItemSelected(int position)
     {
+        if(admin)
+        {
+            onAdminUserSelection(position);
+        }
+        else
+        {
+            onRegularUserSelection(position);
+        }
+    }
+
+    private void onAdminUserSelection(int position)
+    {
         if(position == POS_CLOSE)
         {
             slidingRootNav.closeMenu();
@@ -556,7 +621,8 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                     slidingRootNav.closeMenu();
                 }
             }
-            else {
+            else
+            {
                 if(bundleStatus)
                 {
                     selectedNavigation = POS_DASHBOARD;
@@ -583,7 +649,8 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
             {
                 slidingRootNav.closeMenu();
             }
-            else {
+            else
+            {
                 selectedNavigation = POS_CART;
                 getSupportFragmentManager().beginTransaction()
                         .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
@@ -597,7 +664,8 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
             {
                 slidingRootNav.closeMenu();
             }
-            else {
+            else
+            {
                 selectedNavigation = POS_ORDERS;
                 getSupportFragmentManager().beginTransaction()
                         .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
@@ -611,7 +679,167 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
             {
                 slidingRootNav.closeMenu();
             }
-            else {
+            else
+            {
+                selectedNavigation = POS_PROFILE;
+                slidingRootNav.closeMenu();
+            }
+        }
+        else if(position == POS_SETTINGS)
+        {
+            if(selectedNavigation == POS_SETTINGS)
+            {
+
+                slidingRootNav.closeMenu();
+            }
+            else
+            {
+                selectedNavigation = POS_SETTINGS;
+                slidingRootNav.closeMenu();
+            }
+        }
+        else if(position == POS_ADD_PRODUCT)
+        {
+            if(selectedNavigation == POS_ADD_PRODUCT)
+            {
+                slidingRootNav.closeMenu();
+            }
+            else
+            {
+                selectedNavigation = POS_ADD_PRODUCT;
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                        .replace(R.id.main_container, new AddProductFragment()).commit();
+                slidingRootNav.closeMenu();
+            }
+        }
+        else if(position == POS_USERS)
+        {
+            if(selectedNavigation == POS_USERS)
+            {
+                slidingRootNav.closeMenu();
+            }
+            else
+            {
+                selectedNavigation = POS_USERS;
+                slidingRootNav.closeMenu();
+            }
+        }
+        else if(position == POS_ADMIN_LOGOUT)
+        {
+            UserInfo providerData = mAuth.getCurrentUser().getProviderData().get(1);
+            String providerId = providerData.getProviderId();
+            if(providerId.equals("password"))
+            {
+                progressDialog.show();
+                mAuth.signOut();
+            }
+            else if(providerId.equals("google.com"))
+            {
+                progressDialog.show();
+                GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(getString(R.string.default_web_client_id))
+                        .requestEmail()
+                        .build();
+
+                GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+                mGoogleSignInClient.signOut();
+                mAuth.signOut();
+            }
+            else if(providerId.equals("facebook.com"))
+            {
+                progressDialog.show();
+                LoginManager fbManager = LoginManager.getInstance();
+                fbManager.logOut();
+                mAuth.signOut();
+            }
+        }
+    }
+
+    private void onRegularUserSelection(int position)
+    {
+        if(position == POS_CLOSE)
+        {
+            slidingRootNav.closeMenu();
+        }
+        else if(position == POS_DASHBOARD)
+        {
+            if(selectedNavigation == POS_DASHBOARD)
+            {
+                if(bundleStatus)
+                {
+                    DashboardFragment fragInfo = new DashboardFragment();
+                    fragInfo.setArguments(bundle);
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.main_container, fragInfo)
+                            .commit();
+                    slidingRootNav.closeMenu();
+                }
+                else
+                {
+                    slidingRootNav.closeMenu();
+                }
+            }
+            else
+            {
+                if(bundleStatus)
+                {
+                    selectedNavigation = POS_DASHBOARD;
+                    DashboardFragment fragInfo = new DashboardFragment();
+                    fragInfo.setArguments(bundle);
+                    getSupportFragmentManager().beginTransaction()
+                            .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                            .replace(R.id.main_container, fragInfo).commit();
+                    slidingRootNav.closeMenu();
+                }
+                else
+                {
+                    selectedNavigation = POS_DASHBOARD;
+                    getSupportFragmentManager().beginTransaction()
+                            .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                            .replace(R.id.main_container, new DashboardFragment()).commit();
+                    slidingRootNav.closeMenu();
+                }
+            }
+        }
+        else if(position == POS_CART)
+        {
+            if(selectedNavigation == POS_CART)
+            {
+                slidingRootNav.closeMenu();
+            }
+            else
+            {
+                selectedNavigation = POS_CART;
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                        .replace(R.id.main_container, new CartFragment()).commit();
+                slidingRootNav.closeMenu();
+            }
+        }
+        else if(position == POS_ORDERS)
+        {
+            if(selectedNavigation == POS_ORDERS)
+            {
+                slidingRootNav.closeMenu();
+            }
+            else
+            {
+                selectedNavigation = POS_ORDERS;
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                        .replace(R.id.main_container, new OrdersFragment()).commit();
+                slidingRootNav.closeMenu();
+            }
+        }
+        else if(position == POS_PROFILE)
+        {
+            if(selectedNavigation == POS_PROFILE)
+            {
+                slidingRootNav.closeMenu();
+            }
+            else
+            {
                 selectedNavigation = POS_PROFILE;
                 slidingRootNav.closeMenu();
             }
@@ -674,6 +902,12 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
 
     @Override
     public void onOrdersFragmentTouch()
+    {
+        resetInput(searchView);
+    }
+
+    @Override
+    public void onAddProductFragmentTouch()
     {
         resetInput(searchView);
     }

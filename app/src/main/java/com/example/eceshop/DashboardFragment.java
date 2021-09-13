@@ -36,6 +36,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -88,6 +90,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
     private static final int BATCH_SIZE = 3;
 
     private static final String CLICKED_KEY = "com.example.eceshop.CLICKED_PRODUCT";
+    private static final String ADMIN_KEY = "com.example.eceshop.Admin";
 
     private boolean running;
 
@@ -142,6 +145,9 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
 
         productRecyclerView = root.findViewById(R.id.bottom_recycler);
         productItems = new ArrayList<>();
+
+        productRecyclerView.setDrawingCacheEnabled(true);
+        productRecyclerView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
 
         productRecyclerView.setLayoutManager(new LinearLayoutManager(getActivityNonNull()));
         productAdapter = new ProductRecyclerViewAdapter(getActivityNonNull(), productItems);
@@ -376,10 +382,10 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
     @Override
     public void OnProductClick(int position, Product data)
     {
-        Intent intent = new Intent(getActivityNonNull(), ProductDetailsActivity.class);
-        intent.putExtra(CLICKED_KEY, data);
-        startActivity(intent);
-        CustomIntent.customType(getActivityNonNull(), "left-to-right");
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = mAuth.getCurrentUser();
+        String id = user.getUid();
+        checkAdmin(id, data);
     }
 
     public interface DashboardFragmentTouchListener
@@ -398,7 +404,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
         }
         else
         {
-            if(optionSort.equals("Latest"))
+            if(optionSort.equals("Oldest"))
             {
                 ValueEventListener valueListener = new ValueEventListener()
                 {
@@ -491,7 +497,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                 };
                 mDatabase.addListenerForSingleValueEvent(valueListener);
             }
-            else if(optionSort.equals("Oldest"))
+            else if(optionSort.equals("Latest"))
             {
                 ValueEventListener valueListener = new ValueEventListener()
                 {
@@ -905,7 +911,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
     {
         FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
         DatabaseReference ref = db.getReference("Products");
-        if(optionSort.equals("Latest"))
+        if(optionSort.equals("Oldest"))
         {
             if(newId == null)
             {
@@ -913,7 +919,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
             }
             return db.getReference("Products").orderByKey().startAfter(newId).limitToFirst(BATCH_SIZE);
         }
-        else if(optionSort.equals("Oldest"))
+        else if(optionSort.equals("Latest"))
         {
             if(newId == null)
             {
@@ -949,6 +955,52 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
         {
             return null;
         }
+    }
+
+    private void checkAdmin(String id, Product data)
+    {
+        progressDialog.show();
+        FirebaseDatabase database = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
+        DatabaseReference userDatabase = database.getReference("Users");
+        DatabaseReference userRef = userDatabase.child(id).getRef();
+        userRef.addListenerForSingleValueEvent(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot)
+            {
+                User u = snapshot.getValue(User.class);
+                if(u != null)
+                {
+                    boolean admin = u.isAdmin();
+                    progressDialog.dismiss();
+                    if(admin)
+                    {
+                        Intent intent = new Intent(getActivityNonNull(), ProductDetailsActivity.class);
+                        intent.putExtra(CLICKED_KEY, data);
+                        intent.putExtra(ADMIN_KEY, true);
+                        startActivity(intent);
+                        CustomIntent.customType(getActivityNonNull(), "left-to-right");
+                    }
+                    else
+                    {
+                        Intent intent = new Intent(getActivityNonNull(), ProductDetailsActivity.class);
+                        intent.putExtra(CLICKED_KEY, data);
+                        startActivity(intent);
+                        CustomIntent.customType(getActivityNonNull(), "left-to-right");
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error)
+            {
+                progressDialog.dismiss();
+                CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Task error", "Failed to fetch the connection to the database."
+                        + error.getMessage(),
+                        false);
+                dialog.show();
+            }
+        });
     }
 
 }

@@ -1,5 +1,6 @@
 package com.example.eceshop;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -15,6 +16,11 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import maes.tech.intentanim.CustomIntent;
 
@@ -26,6 +32,9 @@ public class MainActivity extends AppCompatActivity {
     TextView title;
     TextView slogan;
 
+    private String userId;
+    private static final String ADMIN_KEY = "com.example.eceshop.Admin";
+
     private static int SPLASH_SCREEN_DURATION = 3000;
     private static final int TIME_INTERVAL = 2000;
     private long mBackPressed;
@@ -36,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         showCustomUI();
+        userId = "";
         boolean flag = checkIfLoggedIn();
 
         if(flag)
@@ -51,13 +61,12 @@ public class MainActivity extends AppCompatActivity {
             title.setAnimation(bottomAnim);
             slogan.setAnimation(bottomAnim);
 
-            new Handler().postDelayed(new Runnable() {
+            new Handler().postDelayed(new Runnable()
+            {
                 @Override
-                public void run() {
-                    Intent intent = new Intent(MainActivity.this, HomeActivity.class);
-                    startActivity(intent);
-                    CustomIntent.customType(MainActivity.this, "left-to-right");
-                    finish();
+                public void run()
+                {
+                   checkAdmin(userId);
                 }
             }, SPLASH_SCREEN_DURATION);
         }
@@ -74,9 +83,11 @@ public class MainActivity extends AppCompatActivity {
             title.setAnimation(bottomAnim);
             slogan.setAnimation(bottomAnim);
 
-            new Handler().postDelayed(new Runnable() {
+            new Handler().postDelayed(new Runnable()
+            {
                 @Override
-                public void run() {
+                public void run()
+                {
                     Intent intent = new Intent(MainActivity.this, SigningActivity.class);
                     startActivity(intent);
                     CustomIntent.customType(MainActivity.this, "left-to-right");
@@ -92,12 +103,56 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if(user != null)
         {
+            userId = user.getUid();
             return true;
         }
         else
         {
             return false;
         }
+    }
+
+    private void checkAdmin(String id)
+    {
+        FirebaseDatabase database = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
+        DatabaseReference mDatabase = database.getReference("Users");
+        DatabaseReference userRef = mDatabase.child(id).getRef();
+        userRef.addListenerForSingleValueEvent(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot)
+            {
+                User u = snapshot.getValue(User.class);
+                if(u != null)
+                {
+                    boolean admin = u.isAdmin();
+                    if(admin)
+                    {
+                        Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                        intent.putExtra(ADMIN_KEY, true);
+                        startActivity(intent);
+                        CustomIntent.customType(MainActivity.this, "left-to-right");
+                        finish();
+                    }
+                    else
+                    {
+                        Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                        startActivity(intent);
+                        CustomIntent.customType(MainActivity.this, "left-to-right");
+                        finish();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error)
+            {
+                CustomDialog dialog = new CustomDialog(MainActivity.this, "Network/Database error", "Failed to process the data. "
+                        + error.getMessage(),
+                        false);
+                dialog.show();
+            }
+        });
     }
 
     @Override

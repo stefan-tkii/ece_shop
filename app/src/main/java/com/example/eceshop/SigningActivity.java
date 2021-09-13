@@ -76,8 +76,6 @@ public class SigningActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signing);
         showCustomUI();
-        //seed here
-        //seedData();
         tabLayout = findViewById(R.id.tabLayout);
         viewPager = findViewById(R.id.viewPager);
         googleButton = findViewById(R.id.googleButton);
@@ -245,7 +243,7 @@ public class SigningActivity extends AppCompatActivity {
                                 String country = "N/A";
                                 FirebaseUser currentUser = mAuth.getCurrentUser();
                                 String id = currentUser.getUid();
-                                User user = new User(fullName, email, phoneNumber, country);
+                                User user = new User(fullName, email, phoneNumber, country, false);
                                 FirebaseDatabase database = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
                                 DatabaseReference mDatabase = database.getReference("Users");
                                 mDatabase.child(id).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -314,7 +312,7 @@ public class SigningActivity extends AppCompatActivity {
                         String country = "N/A";
                         FirebaseUser currentUser = mAuth.getCurrentUser();
                         String id = currentUser.getUid();
-                        User user = new User(fullName, email, phoneNumber, country);
+                        User user = new User(fullName, email, phoneNumber, country, false);
                         FirebaseDatabase database = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
                         DatabaseReference mDatabase = database.getReference("Users");
                         mDatabase.child(id).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -375,37 +373,12 @@ public class SigningActivity extends AppCompatActivity {
         mBackPressed = System.currentTimeMillis();
     }
 
-    private void showCustomUI() {
+    private void showCustomUI()
+    {
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-    }
-
-    private void seedData()
-    {
-        FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
-        DatabaseReference mDatabase = db.getReference("Products");
-        ProductDb item = new ProductDb("MacBook Pro M1", "The latest M1 based MacBook Pro.",
-                "This is the long description.",
-                "https://firebasestorage.googleapis.com/v0/b/ece-shop.appspot.com/o/product_images%2Fmacbook.jpg?alt=media&token=a04ca6e4-db88-4095-a307-258eddea43d0",
-                600.0, 4, "Hardware", 8);
-        mDatabase.push().setValue(item).addOnCompleteListener(new OnCompleteListener<Void>()
-        {
-            @Override
-            public void onComplete(@NonNull Task<Void> task)
-            {
-                if(task.isSuccessful())
-                {
-                    Log.e("Tadz", "Product is added.");
-                }
-                else
-                {
-                    Log.e("Tadz", Objects.requireNonNull(task.getException()).getMessage());
-                }
-            }
-
-        });
     }
 
 }

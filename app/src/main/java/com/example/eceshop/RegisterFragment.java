@@ -37,7 +37,8 @@ import java.util.Objects;
 
 import dmax.dialog.SpotsDialog;
 
-public class RegisterFragment extends Fragment {
+public class RegisterFragment extends Fragment
+{
 
     private EditText name;
     private EditText email;
@@ -54,7 +55,8 @@ public class RegisterFragment extends Fragment {
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.register_fragment, container, false);
 
         name = root.findViewById(R.id.name_field);
@@ -68,10 +70,12 @@ public class RegisterFragment extends Fragment {
 
         registerContainer = root.findViewById(R.id.register_container);
 
-        registerContainer.setOnTouchListener(new View.OnTouchListener() {
+        registerContainer.setOnTouchListener(new View.OnTouchListener()
+        {
             @SuppressLint("ClickableViewAccessibility")
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
+            public boolean onTouch(View v, MotionEvent event)
+            {
                 InputMethodManager imm = (InputMethodManager) getActivityNonNull().getSystemService(Context.INPUT_METHOD_SERVICE);
                 View focusedView = getActivityNonNull().getCurrentFocus();
                 if (focusedView != null)
@@ -115,7 +119,8 @@ public class RegisterFragment extends Fragment {
                 .setCancelable(false).setTheme(R.style.CustomProgressDialog)
                 .build();
 
-        registerButton.setOnClickListener(new View.OnClickListener() {
+        registerButton.setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View v) {
                 registerAccount();
@@ -181,29 +186,32 @@ public class RegisterFragment extends Fragment {
         else
         {
             progressDialog.show();
-            mAuth.createUserWithEmailAndPassword(pEmail, pPass).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            mAuth.createUserWithEmailAndPassword(pEmail, pPass).addOnCompleteListener(new OnCompleteListener<AuthResult>()
+            {
                 @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
+                public void onComplete(@NonNull Task<AuthResult> task)
+                {
                     if(task.isSuccessful())
                     {
-                        Log.e("TaskRegister", "Auth object is created.");
-                        User user = new User(pName, pEmail, phoneNumber, countryName);
+                        User user = new User(pName, pEmail, phoneNumber, countryName, false);
                         FirebaseUser logged = FirebaseAuth.getInstance().getCurrentUser();
                         FirebaseDatabase database = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
                         DatabaseReference mDatabase = database.getReference("Users");
-                        mDatabase.child(logged.getUid()).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        mDatabase.child(logged.getUid()).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>()
+                        {
                             @Override
-                            public void onComplete(@NonNull Task<Void> task) {
+                            public void onComplete(@NonNull Task<Void> task)
+                            {
                                 if(task.isSuccessful())
                                 {
                                     FirebaseUser user = mAuth.getCurrentUser();
-                                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder().setDisplayName(pName).build();
+                                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                            .setDisplayName(pName).build();
                                     user.updateProfile(profileUpdates).addOnCompleteListener(new OnCompleteListener<Void>()
                                     {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task)
                                         {
-                                            Log.e("TaskRegister", "Realtime object is created.");
                                             progressDialog.dismiss();
                                             email.setText("");
                                             password.setText("");
@@ -219,7 +227,6 @@ public class RegisterFragment extends Fragment {
                                 }
                                 else
                                 {
-                                    Log.e("TaskRegister", "Inside error is " + task.getException().getMessage());
                                     progressDialog.dismiss();
                                     CustomDialog dialog = new CustomDialog(ctx, "Register error", "Failed to register your account. "
                                             + Objects.requireNonNull(task.getException()).getMessage(),
@@ -243,22 +250,27 @@ public class RegisterFragment extends Fragment {
         }
     }
 
-    protected FragmentActivity getActivityNonNull() {
-        if (super.getActivity() != null) {
+    protected FragmentActivity getActivityNonNull()
+    {
+        if (super.getActivity() != null)
+        {
             return super.getActivity();
-        } else {
+        }
+        else {
             throw new RuntimeException("null returned from getActivity()");
         }
     }
 
     @Override
-    public void onAttach(@NonNull Context context) {
+    public void onAttach(@NonNull Context context)
+    {
         super.onAttach(context);
         this.ctx = context;
     }
 
     @Override
-    public void onStop() {
+    public void onStop()
+    {
         super.onStop();
         email.setText("");
         password.setText("");

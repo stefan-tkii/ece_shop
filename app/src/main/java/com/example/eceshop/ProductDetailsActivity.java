@@ -67,6 +67,7 @@ public class ProductDetailsActivity extends AppCompatActivity
 
     private static final String CLICKED_KEY = "com.example.eceshop.CLICKED_PRODUCT";
     private static final String ORIGIN_KEY = "com.example.eceshop.ORIGIN_KEY";
+    private static final String ADMIN_KEY = "com.example.eceshop.Admin";
 
     private Product model;
     private Toolbar toolbar;
@@ -108,6 +109,7 @@ public class ProductDetailsActivity extends AppCompatActivity
     private static final int BATCH_SIZE = 3;
     private boolean running;
     private boolean origin;
+    private boolean admin;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -136,6 +138,8 @@ public class ProductDetailsActivity extends AppCompatActivity
 
         changeStatusBarColor();
 
+        admin = getIntent().getBooleanExtra(ADMIN_KEY, false);
+
         container = findViewById(R.id.details_container);
         backToTop = findViewById(R.id.backToTopDetails);
         imageView = findViewById(R.id.details_image);
@@ -158,6 +162,14 @@ public class ProductDetailsActivity extends AppCompatActivity
         commentsAdapter = new CommentsRecyclerViewAdapter(this, comments);
         commentsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         commentsRecyclerView.setAdapter(commentsAdapter);
+
+        if(admin)
+        {
+            String edit = "Edit product";
+            addToCartBtn.setText(edit);
+            int img = R.drawable.ic_edit;
+            addToCartBtn.setCompoundDrawablesRelativeWithIntrinsicBounds(img, 0, 0, 0);
+        }
 
         SwipeHelper swipeHelper = new SwipeHelper(this, commentsRecyclerView)
         {
@@ -313,43 +325,14 @@ public class ProductDetailsActivity extends AppCompatActivity
             @Override
             public void onClick(View v)
             {
-                progressDialog.show();
-                FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
-                DatabaseReference ref = db.getReference("Carts").child(userKey).child("CartItems");
-                ref.addListenerForSingleValueEvent(new ValueEventListener()
+                if(admin)
                 {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot)
-                    {
-                        boolean found = false;
-                        for(DataSnapshot snap : snapshot.getChildren())
-                        {
-                            if(snap.getKey().equals(model.getProductId()))
-                            {
-                                found = true;
-                                break;
-                            }
-                        }
-                        if(found)
-                        {
-                            progressDialog.dismiss();
-                            CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Task error", "This product is already added to your cart.", false);
-                            dialog.show();
-                        }
-                        else
-                        {
-                            addToCart();
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error)
-                    {
-                        progressDialog.dismiss();
-                        CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", error.getMessage(), false);
-                        dialog.show();
-                    }
-                });
+                    gotoEditProduct();
+                }
+                else
+                {
+                    userAddToCart();
+                }
             }
         });
 
@@ -452,6 +435,52 @@ public class ProductDetailsActivity extends AppCompatActivity
         }
     }
 
+    private void gotoEditProduct()
+    {
+
+    }
+
+    private void userAddToCart()
+    {
+        progressDialog.show();
+        FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
+        DatabaseReference ref = db.getReference("Carts").child(userKey).child("CartItems");
+        ref.addListenerForSingleValueEvent(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot)
+            {
+                boolean found = false;
+                for(DataSnapshot snap : snapshot.getChildren())
+                {
+                    if(snap.getKey().equals(model.getProductId()))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if(found)
+                {
+                    progressDialog.dismiss();
+                    CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Task error", "This product is already added to your cart.", false);
+                    dialog.show();
+                }
+                else
+                {
+                    addToCart();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error)
+            {
+                progressDialog.dismiss();
+                CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", error.getMessage(), false);
+                dialog.show();
+            }
+        });
+    }
+
     private void addToCart()
     {
         final HashMap<String, Object> item = new HashMap<>();
@@ -497,7 +526,8 @@ public class ProductDetailsActivity extends AppCompatActivity
 
     private void loadData()
     {
-        Picasso.get().load(model.getImgUri()).into(imageView);
+        Picasso.get().load(model.getImgUri()).placeholder(R.drawable.load_placeholder)
+                .into(imageView);
         nameText.setText(model.getName());
         String price = "Price: " + model.getPrice() + "$";
         priceText.setText(price);

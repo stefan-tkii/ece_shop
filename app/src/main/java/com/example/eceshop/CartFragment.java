@@ -207,6 +207,10 @@ public class CartFragment extends Fragment implements CartItemRecyclerViewAdapte
         placeholderView.setVisibility(View.GONE);
 
         ((SimpleItemAnimator) Objects.requireNonNull(cartRecyclerView.getItemAnimator())).setSupportsChangeAnimations(false);
+
+        cartRecyclerView.setDrawingCacheEnabled(true);
+        cartRecyclerView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+
         cartRecyclerView.setLayoutManager(new LinearLayoutManager(getActivityNonNull()));
         itemsAdapter = new CartItemRecyclerViewAdapter(getActivityNonNull(), cartItems);
         itemsAdapter.setOnCartButtonClickListener(this);

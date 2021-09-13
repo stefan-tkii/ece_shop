@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white"
+    android:id="@+id/sourceDialogContainer">
+
+    <ImageView
+        android:id="@+id/topImageSourceDialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/upload_icon"/>
+
+    <TextView
+        android:id="@+id/topSourceDialogText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/error"
+        android:textColor="@android:color/black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topImageSourceDialog"/>
+
+    <TextView
+        android:id="@+id/centerSourceDialogText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/center_dialog_text"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topSourceDialogText"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="30dp"
+        android:weightSum="100"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/centerSourceDialogText">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/cameraDialogButton"
+            android:layout_width="0dp"
+            android:layout_marginEnd="2dp"
+            android:layout_weight="50"
+            android:drawableStart="@drawable/ic_camera"
+            android:drawableTint="@color/productColor"
+            android:drawablePadding="2dp"
+            android:paddingStart="50dp"
+            android:paddingEnd="50dp"
+            android:layout_height="wrap_content"
+            android:stateListAnimator="@null"
+            android:text="@string/camera"
+            android:textSize="15sp"
+            android:textAllCaps="false"
+            android:textColor="@color/productColor"
+            android:background="@drawable/source_dialog_btn"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/galleryDialogButton"
+            android:layout_width="0dp"
+            android:layout_weight="50"
+            android:layout_height="wrap_content"
+            android:stateListAnimator="@null"
+            android:text="@string/gallery"
+            android:textSize="15sp"
+            android:paddingStart="50dp"
+            android:paddingEnd="50dp"
+            android:layout_marginStart="2dp"
+            android:drawableStart="@drawable/ic_library"
+            android:drawableTint="@color/productColor"
+            android:drawablePadding="2dp"
+            android:textAllCaps="false"
+            android:textColor="@color/productColor"
+            android:background="@drawable/source_dialog_btn"/>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

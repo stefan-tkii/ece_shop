@@ -1,23 +1,26 @@
 package com.example.eceshop;
 
-public class User {
+public class User
+{
 
     private String fullName;
     private String email;
     private String phoneNumber;
     private String country;
+    private boolean isAdmin;
 
     public User()
     {
 
     }
 
-    public User(String fullName, String email, String phoneNumber, String country)
+    public User(String fullName, String email, String phoneNumber, String country, boolean isAdmin)
     {
         this.fullName = fullName;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.country = country;
+        this.isAdmin = isAdmin;
     }
 
     public String getFullName()
@@ -58,6 +61,16 @@ public class User {
     public void setCountry(String country)
     {
         this.country = country;
+    }
+
+    public boolean isAdmin()
+    {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin)
+    {
+        isAdmin = admin;
     }
 
 }

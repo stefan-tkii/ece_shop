@@ -23,6 +23,32 @@
         <item>@drawable/ic_logout</item>
     </array>
 
+    <string-array name="id_adminActivityScreenTitles">
+        <item></item>
+        <item>Home</item>
+        <item>Cart</item>
+        <item>Orders</item>
+        <item>Profile</item>
+        <item>Settings</item>
+        <item>Add product</item>
+        <item>User management</item>
+        <item/>
+        <item>Logout</item>
+    </string-array>
+
+    <array name="id_adminActivityScreenIcons">
+        <item>@drawable/ic_close</item>
+        <item>@drawable/ic_home</item>
+        <item>@drawable/ic_cart</item>
+        <item>@drawable/ic_orders</item>
+        <item>@drawable/ic_profile</item>
+        <item>@drawable/ic_settings</item>
+        <item>@drawable/ic_add_product</item>
+        <item>@drawable/ic_users</item>
+        <item>0</item>
+        <item>@drawable/ic_logout</item>
+    </array>
+
     <string-array name="category_titles">
         <item>Clothes</item>
         <item>Hardware</item>

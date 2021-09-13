@@ -17,6 +17,7 @@
         <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:dropDownListViewStyle">@style/MyListViewStyle</item>
     </style>
 
     <style name="dialogAnimation">
@@ -39,6 +40,22 @@
         <item name="colorControlNormal">@color/black</item>
         <item name="colorControlActivated">@color/mainTextColor</item>
         <item name="colorControlHighlight">@color/mainTextColor</item>
+    </style>
+
+    <style name="ProductInput" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <item name="android:textColorHint">#D5B206</item>
+        <item name="colorControlNormal">@color/black</item>
+        <item name="colorControlActivated">@color/productColor</item>
+        <item name="colorControlHighlight">@color/productColor</item>
+    </style>
+
+    <style name="MyListViewStyle" parent="@android:style/Widget.ListView">
+        <item name="android:divider">@android:color/darker_gray</item>
+        <item name="android:dividerHeight">1dp</item>
+    </style>
+
+    <style name="InputText_Overlay">
+        <item name="colorPrimary">@color/goldColor</item>
     </style>
 
     <style name="CardWidgetStyle" parent="@android:style/Theme.DeviceDefault">

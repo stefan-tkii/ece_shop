@@ -56,7 +56,8 @@ public class ProductRecyclerViewAdapter extends RecyclerView.Adapter<ProductRecy
         Product item = items.get(position);
         holder.name.setText(item.getName());
         String imgUrl = item.getImgUri();
-        Picasso.get().load(imgUrl).into(holder.image);
+        Picasso.get().load(imgUrl).placeholder(R.drawable.load_placeholder)
+                .into(holder.image);
         holder.description.setText(item.getShortDesc());
         String price = "Price: " + item.getPrice().toString() + "$";
         holder.price.setText(price);
