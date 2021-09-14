@@ -36,7 +36,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -57,7 +56,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 import dmax.dialog.SpotsDialog;
 import maes.tech.intentanim.CustomIntent;
@@ -68,6 +66,8 @@ public class ProductDetailsActivity extends AppCompatActivity
     private static final String CLICKED_KEY = "com.example.eceshop.CLICKED_PRODUCT";
     private static final String ORIGIN_KEY = "com.example.eceshop.ORIGIN_KEY";
     private static final String ADMIN_KEY = "com.example.eceshop.Admin";
+    private static final String EDIT_KEY = "com.example.eceshop.PRODUCT_EDIT";
+    private static final String FROM_EDIT_KEY = "com.example.eceshop.FROM_EDIT";
 
     private Product model;
     private Toolbar toolbar;
@@ -110,6 +110,7 @@ public class ProductDetailsActivity extends AppCompatActivity
     private boolean running;
     private boolean origin;
     private boolean admin;
+    private boolean edit;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -139,6 +140,10 @@ public class ProductDetailsActivity extends AppCompatActivity
         changeStatusBarColor();
 
         admin = getIntent().getBooleanExtra(ADMIN_KEY, false);
+
+        model = getIntent().getParcelableExtra(CLICKED_KEY);
+        origin = getIntent().getBooleanExtra(ORIGIN_KEY, false);
+        edit = getIntent().getBooleanExtra(FROM_EDIT_KEY, false);
 
         container = findViewById(R.id.details_container);
         backToTop = findViewById(R.id.backToTopDetails);
@@ -177,7 +182,7 @@ public class ProductDetailsActivity extends AppCompatActivity
             public void instantiateUnderlayButton(RecyclerView.ViewHolder viewHolder, List<UnderlayButton> underlayButtons)
             {
                 underlayButtons.add(new SwipeHelper.UnderlayButton(
-                        "Delete",
+                        "Remove",
                         0,
                         Color.parseColor("#042382"),
                         new SwipeHelper.UnderlayButtonClickListener()
@@ -185,59 +190,13 @@ public class ProductDetailsActivity extends AppCompatActivity
                             @Override
                             public void onClick(int pos)
                             {
-                                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                                String email = user.getEmail();
-                                CommentRvItem item = comments.get(pos);
-                                String commenter = item.getUserEmail();
-                                if(email.equals(commenter))
+                                if(admin)
                                 {
-                                    int comp = comments.size() - pos;
-                                    if(comp <= BATCH_SIZE)
-                                    {
-                                        if(sortBy.equals("Latest"))
-                                        {
-                                            nextKey = afterKey;
-                                        }
-                                        else if(sortBy.equals("Oldest"))
-                                        {
-                                            nextKey = prevKey;
-                                        }
-                                    }
-                                    FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
-                                    DatabaseReference ref = db.getReference("ProductComments");
-                                    DatabaseReference childRef = ref.child(model.getProductId()).getRef();
-                                    DatabaseReference finalRef = childRef.child(item.getId()).getRef();
-                                    //progressDialog.show();
-                                    finalRef.addListenerForSingleValueEvent(new ValueEventListener()
-                                    {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot snapshot)
-                                        {
-                                            snapshot.getRef().removeValue(new DatabaseReference.CompletionListener()
-                                            {
-                                                @Override
-                                                public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref)
-                                                {
-                                                    //progressDialog.dismiss();
-                                                    comments.remove(pos);
-                                                    commentsAdapter.notifyItemRemoved(pos);
-                                                }
-                                            });
-                                        }
-
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError error)
-                                        {
-                                           // progressDialog.dismiss();
-                                            CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", "Could not delete this comment.", false);
-                                            dialog.show();
-                                        }
-                                    });
+                                    deleteCommentAsAdmin(pos);
                                 }
                                 else
                                 {
-                                    CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Delete error", "Cannot delete other user's comments.", false);
-                                    dialog.show();
+                                    deleteCommentAsUser(pos);
                                 }
                             }
                         }
@@ -351,14 +310,13 @@ public class ProductDetailsActivity extends AppCompatActivity
                 }
                 else
                 {
-                    //progressDialog.show();
                     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                     if(user != null)
                     {
                         String userId = user.getUid();
                         FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
                         DatabaseReference mDatabase = db.getReference("ProductComments").child(model.getProductId());
-                        Comment cmn = new Comment(userId, input, System.currentTimeMillis());
+                        Comment cmn = new Comment(userId, input, System.currentTimeMillis(), false);
                         @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                         String postedAt = sdf.format(new Date(System.currentTimeMillis()));
                         String key = mDatabase.push().getKey();
@@ -372,10 +330,9 @@ public class ProductDetailsActivity extends AppCompatActivity
                                 if(task.isSuccessful())
                                 {
                                     placeholderTextView.setVisibility(View.GONE);
-                                    //progressDialog.dismiss();
                                     if(sortBy.equals("Latest"))
                                     {
-                                        CommentRvItem item = new CommentRvItem(key, user.getDisplayName(), user.getEmail(), input, postedAt);
+                                        CommentRvItem item = new CommentRvItem(key, user.getDisplayName(), user.getEmail(), input, postedAt, false);
                                         resetInput();
                                         comments.add(0, item);
                                         commentsAdapter.notifyItemInserted(0);
@@ -392,7 +349,6 @@ public class ProductDetailsActivity extends AppCompatActivity
                                 else
                                 {
                                     resetInput();
-                                    //progressDialog.dismiss();
                                     CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", "Could not post this comment.", false);
                                     dialog.show();
                                 }
@@ -402,7 +358,6 @@ public class ProductDetailsActivity extends AppCompatActivity
                     else
                     {
                         resetInput();
-                       // progressDialog.dismiss();
                         CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", "Cannot get session details.", false);
                         dialog.show();
                     }
@@ -414,9 +369,6 @@ public class ProductDetailsActivity extends AppCompatActivity
 
         categoryIcons = loadCategoryIcons();
         categoryTitles = loadCategoryTitles();
-
-        model = getIntent().getParcelableExtra(CLICKED_KEY);
-        origin = getIntent().getBooleanExtra(ORIGIN_KEY, false);
 
         placeholderTextView.setVisibility(View.GONE);
         loadBar.setVisibility(View.VISIBLE);
@@ -435,9 +387,151 @@ public class ProductDetailsActivity extends AppCompatActivity
         }
     }
 
+    private void deleteCommentAsUser(int pos)
+    {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String email = user.getEmail();
+        CommentRvItem item = comments.get(pos);
+        String commenter = item.getUserEmail();
+        if(email.equals(commenter))
+        {
+            if(item.isRemoved())
+            {
+                CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Removal error", "This comment is already removed.", false);
+                dialog.show();
+            }
+            else
+            {
+                int comp = comments.size() - pos;
+                if(comp <= BATCH_SIZE)
+                {
+                    if(sortBy.equals("Latest"))
+                    {
+                        nextKey = afterKey;
+                    }
+                    else if(sortBy.equals("Oldest"))
+                    {
+                        nextKey = prevKey;
+                    }
+                }
+                FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
+                DatabaseReference ref = db.getReference("ProductComments");
+                DatabaseReference childRef = ref.child(model.getProductId()).getRef();
+                DatabaseReference finalRef = childRef.child(item.getId()).getRef();
+                finalRef.addListenerForSingleValueEvent(new ValueEventListener()
+                {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot)
+                    {
+                        snapshot.getRef().removeValue(new DatabaseReference.CompletionListener()
+                        {
+                            @Override
+                            public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref)
+                            {
+                                comments.remove(pos);
+                                commentsAdapter.notifyItemRemoved(pos);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error)
+                    {
+                        CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Server/Network error", "Could not delete this comment.", false);
+                        dialog.show();
+                    }
+                });
+            }
+        }
+        else
+        {
+            CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Delete error", "Cannot delete other user's comments.", false);
+            dialog.show();
+        }
+    }
+
     private void gotoEditProduct()
     {
+        Intent intent = new Intent(ProductDetailsActivity.this, EditProductActivity.class);
+        intent.putExtra(EDIT_KEY, model);
+        startActivity(intent);
+        CustomIntent.customType(ProductDetailsActivity.this, "left-to-right");
+    }
 
+    private void deleteCommentAsAdmin(int pos)
+    {
+        CommentRvItem item = comments.get(pos);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String email = user.getEmail();
+        String commenter = item.getUserEmail();
+        if(email.equals(commenter))
+        {
+            deleteCommentAsUser(pos);
+        }
+        else if(item.isRemoved())
+        {
+            CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Removal error", "This comment is already removed.", false);
+            dialog.show();
+        }
+        else
+        {
+            progressDialog.show();
+            FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
+            DatabaseReference ref = db.getReference("Users");
+            ref.orderByChild("email").equalTo(item.getUserEmail()).addListenerForSingleValueEvent(new ValueEventListener()
+            {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot)
+                {
+                    for(DataSnapshot snap : snapshot.getChildren())
+                    {
+                        User u = snap.getValue(User.class);
+                        if(u.getEmail().equals(item.getUserEmail()))
+                        {
+                            FirebaseDatabase db = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
+                            DatabaseReference ref = db.getReference("ProductComments");
+                            DatabaseReference childRef = ref.child(model.getProductId()).getRef();
+                            final HashMap<String, Object> updatesMap = new HashMap<>();
+                            Comment c = new Comment(snap.getKey(), "This comment has been removed by an admin, because of policy violations.",
+                                    System.currentTimeMillis(), true);
+                            updatesMap.put(item.getId(), c);
+                            childRef.updateChildren(updatesMap).addOnCompleteListener(new OnCompleteListener<Void>()
+                            {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task)
+                                {
+                                    if(task.isSuccessful())
+                                    {
+                                        progressDialog.dismiss();
+                                        item.setContent("This comment has been removed by an admin, because of policy violations.");
+                                        item.setRemoved(true);
+                                        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                                        long postedAtLong = System.currentTimeMillis();
+                                        String postedAt = sdf.format(new Date(postedAtLong));
+                                        item.setPostedAt(postedAt);
+                                        comments.set(pos, item);
+                                        commentsAdapter.notifyItemChanged(pos);
+                                    }
+                                    else
+                                    {
+                                        CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Removal error", task.getException().getMessage(), false);
+                                        dialog.show();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error)
+                {
+                    progressDialog.dismiss();
+                    CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Removal error", error.getMessage(), false);
+                    dialog.show();
+                }
+            });
+        }
     }
 
     private void userAddToCart()
@@ -801,7 +895,7 @@ public class ProductDetailsActivity extends AppCompatActivity
                             long postedAtLong = dbComments.get(counter).getPostedAt();
                             String postedAt = sdf.format(new Date(postedAtLong));
                             CommentRvItem item = new CommentRvItem(ids.get(counter),
-                                    u.getFullName(), u.getEmail(), dbComments.get(counter).getContent(), postedAt);
+                                    u.getFullName(), u.getEmail(), dbComments.get(counter).getContent(), postedAt, dbComments.get(counter).isRemoved());
                             comments.add(item);
                             break;
                         }
@@ -870,6 +964,13 @@ public class ProductDetailsActivity extends AppCompatActivity
                     CustomIntent.customType(ProductDetailsActivity.this, "right-to-left");
                     finish();
                 }
+                else if(edit)
+                {
+                    Intent intent = new Intent(ProductDetailsActivity.this, HomeActivity.class);
+                    startActivity(intent);
+                    CustomIntent.customType(ProductDetailsActivity.this, "right-to-left");
+                    finish();
+                }
                 else
                 {
                     Intent intent = new Intent(ProductDetailsActivity.this, HomeActivity.class);
@@ -925,6 +1026,14 @@ public class ProductDetailsActivity extends AppCompatActivity
         {
             Intent intent = new Intent(ProductDetailsActivity.this, OrderDetailsActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            CustomIntent.customType(ProductDetailsActivity.this, "right-to-left");
+            finish();
+        }
+        else if(edit)
+        {
+            Log.e("aa", "Inside edit");
+            Intent intent = new Intent(ProductDetailsActivity.this, HomeActivity.class);
             startActivity(intent);
             CustomIntent.customType(ProductDetailsActivity.this, "right-to-left");
             finish();

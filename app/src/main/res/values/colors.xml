@@ -23,4 +23,5 @@
     <color name="pendingColor">#C6A529</color>
     <color name="productColor">#E040FB</color>
     <color name="goldColor">#FFFF00</color>
+    <color name="profilesColor">#CDA200</color>
 </resources>

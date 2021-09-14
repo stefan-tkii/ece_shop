@@ -1,7 +1,5 @@
 package com.example.eceshop;
 
-import java.util.Date;
-
 public class CommentRvItem
 {
 
@@ -10,19 +8,21 @@ public class CommentRvItem
     private String userEmail;
     private String content;
     private String postedAt;
+    private boolean removed;
 
     public CommentRvItem()
     {
 
     }
 
-    public CommentRvItem(String id, String userName, String userEmail, String content, String postedAt)
+    public CommentRvItem(String id, String userName, String userEmail, String content, String postedAt, boolean removed)
     {
         this.id = id;
         this.userName = userName;
         this.userEmail = userEmail;
         this.content = content;
         this.postedAt = postedAt;
+        this.removed = removed;
     }
 
     public String getId()
@@ -73,6 +73,16 @@ public class CommentRvItem
     public void setPostedAt(String postedAt)
     {
         this.postedAt = postedAt;
+    }
+
+    public boolean isRemoved()
+    {
+        return removed;
+    }
+
+    public void setRemoved(boolean removed)
+    {
+        this.removed = removed;
     }
 
 }

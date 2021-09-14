@@ -7,9 +7,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -37,23 +35,15 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.facebook.FacebookSdk;
-import com.facebook.appevents.AppEventsLogger;
-import com.google.firebase.database.ServerValue;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
-import java.net.URI;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.Objects;
-import java.util.UUID;
 
 import dmax.dialog.SpotsDialog;
 import maes.tech.intentanim.CustomIntent;
 
 
-public class SigningActivity extends AppCompatActivity {
+public class SigningActivity extends AppCompatActivity
+{
 
     private TabLayout tabLayout;
     private ViewPager viewPager;

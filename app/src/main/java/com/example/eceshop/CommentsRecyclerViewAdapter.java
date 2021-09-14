@@ -43,8 +43,18 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<CommentsRe
         holder.posterNameTextView.setText(item.getUserName());
         holder.posterEmailTextView.setText(item.getUserEmail());
         holder.contentTextView.setText(item.getContent());
-        String postedAt = "Posted at: " + item.getPostedAt();
-        holder.postedAtTextView.setText(postedAt);
+        if(item.isRemoved())
+        {
+            String postedAt = "Removed at: " + item.getPostedAt();
+            holder.postedAtTextView.setText(postedAt);
+            holder.container.setBackgroundResource(R.drawable.removed_comment_bg);
+        }
+        else
+        {
+            String postedAt = "Posted at: " + item.getPostedAt();
+            holder.postedAtTextView.setText(postedAt);
+            holder.container.setBackgroundResource(R.drawable.comment_bg);
+        }
         setAnimation(holder.itemView, position);
     }
 

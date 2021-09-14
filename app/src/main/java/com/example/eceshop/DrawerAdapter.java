@@ -3,7 +3,6 @@ package com.example.eceshop;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,7 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.ViewHolder> {
+public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.ViewHolder>
+{
 
     private List<DrawerItem> items;
     private Map<Class<? extends DrawerItem>, Integer> viewTypes;

@@ -7,9 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.cursoradapter.widget.CursorAdapter;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,24 +17,18 @@ import android.content.Intent;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,21 +36,19 @@ import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.UserInfo;
 import com.yarolegovich.slidingrootnav.SlidingRootNav;
 import com.yarolegovich.slidingrootnav.SlidingRootNavBuilder;
 
 import java.util.Arrays;
-import java.util.List;
 
 import dmax.dialog.SpotsDialog;
 import maes.tech.intentanim.CustomIntent;
 
 public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnItemSelectedListener, DashboardFragment.DashboardFragmentTouchListener,
-        CartFragment.CartFragmentTouchListener, OrdersFragment.OrdersFragmentTouchListener, AddProductFragment.AddProductFragmentTouchListener
+        CartFragment.CartFragmentTouchListener, OrdersFragment.OrdersFragmentTouchListener, AddProductFragment.AddProductFragmentTouchListener,
+        ProfileFragment.ProfileFragmentTouchListener
 {
 
     private FirebaseAuth mAuth;
@@ -682,6 +671,9 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
             else
             {
                 selectedNavigation = POS_PROFILE;
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                        .replace(R.id.main_container, new ProfileFragment()).commit();
                 slidingRootNav.closeMenu();
             }
         }
@@ -841,6 +833,9 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
             else
             {
                 selectedNavigation = POS_PROFILE;
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                        .replace(R.id.main_container, new ProfileFragment()).commit();
                 slidingRootNav.closeMenu();
             }
         }
@@ -908,6 +903,12 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
 
     @Override
     public void onAddProductFragmentTouch()
+    {
+        resetInput(searchView);
+    }
+
+    @Override
+    public void onProfileFragmentTouch()
     {
         resetInput(searchView);
     }

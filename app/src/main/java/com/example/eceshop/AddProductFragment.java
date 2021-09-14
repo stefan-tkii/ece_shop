@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -60,7 +59,6 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -112,6 +110,8 @@ public class AddProductFragment extends Fragment implements PhotoSourceDialog.on
     private String stockInput;
     private String imageUrl;
 
+    private boolean flag;
+
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
     @Override
@@ -131,6 +131,8 @@ public class AddProductFragment extends Fragment implements PhotoSourceDialog.on
         photoImagePath = "";
         compressedImagePath = "";
         photoUri = null;
+
+        flag = true;
 
         name = "";
         shortDesc = "";
@@ -381,10 +383,9 @@ public class AddProductFragment extends Fragment implements PhotoSourceDialog.on
             }
         });
 
-        selectedCategory = "Clothes";
-
         categoryIcons = loadCategoryIcons();
         options = getResources().getStringArray(R.array.productCategories);
+        selectedCategory = options[0];
 
         return root;
     }
@@ -407,10 +408,14 @@ public class AddProductFragment extends Fragment implements PhotoSourceDialog.on
                 if(!selectedCategory.equals(item))
                 {
                     selectedCategory = item;
-                    Log.e("FF", selectedCategory);
                 }
             }
         });
+        if(flag)
+        {
+            flag = false;
+            categorySelector.setText(options[0], false);
+        }
     }
 
     private void addProductToDb()
@@ -461,17 +466,25 @@ public class AddProductFragment extends Fragment implements PhotoSourceDialog.on
                 {
                     if(snapshot.exists())
                     {
-                        long count = snapshot.getChildrenCount();
-                        if(count != 0)
+                        boolean found = false;
+                        for(DataSnapshot snap : snapshot.getChildren())
                         {
-                            progressDialog.dismiss();
-                            CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Product error", "A product already exists with this name.", false);
-                            dialog.show();
+                            ProductDb p = snap.getValue(ProductDb.class);
+                            if(p.getName().equals(name))
+                            {
+                                found = true;
+                            }
                         }
-                        else
-                        {
-                            uploadImage();
-                        }
+                       if(found)
+                       {
+                           progressDialog.dismiss();
+                           CustomDialog dialog = new CustomDialog(getActivityNonNull(), "Product error", "A product already exists with this name.", false);
+                           dialog.show();
+                       }
+                       else
+                       {
+                           uploadImage();
+                       }
                     }
                     else
                     {

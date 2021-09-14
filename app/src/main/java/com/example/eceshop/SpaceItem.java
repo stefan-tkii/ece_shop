@@ -6,7 +6,8 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
-public class SpaceItem extends DrawerItem<SpaceItem.ViewHolder> {
+public class SpaceItem extends DrawerItem<SpaceItem.ViewHolder>
+{
 
     private int spaceDp;
 
@@ -16,7 +17,8 @@ public class SpaceItem extends DrawerItem<SpaceItem.ViewHolder> {
     }
 
     @Override
-    public ViewHolder createViewHolder(ViewGroup parent) {
+    public ViewHolder createViewHolder(ViewGroup parent)
+    {
         Context c = parent.getContext();
         View v = new View(c);
         int height = (int) (c.getResources().getDisplayMetrics().density*spaceDp);
@@ -27,7 +29,8 @@ public class SpaceItem extends DrawerItem<SpaceItem.ViewHolder> {
     }
 
     @Override
-    public void bindViewHolder(ViewHolder holder) {
+    public void bindViewHolder(ViewHolder holder)
+    {
 
     }
 

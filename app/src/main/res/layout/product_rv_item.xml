@@ -83,7 +83,7 @@
                 android:layout_height="200dp"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
-                android:scaleType="centerCrop"
+                android:scaleType="fitXY"
                 android:src="@drawable/sample_product_image"/>
 
             <LinearLayout

@@ -24,7 +24,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import maes.tech.intentanim.CustomIntent;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+{
 
     Animation topAnim;
     Animation bottomAnim;

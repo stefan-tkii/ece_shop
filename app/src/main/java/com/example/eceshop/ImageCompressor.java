@@ -1,7 +1,6 @@
 package com.example.eceshop;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -10,7 +9,6 @@ import android.graphics.Paint;
 import androidx.exifinterface.media.ExifInterface;
 import android.net.Uri;
 import android.os.Environment;
-import android.provider.MediaStore;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -160,14 +158,6 @@ public class ImageCompressor
     private String getRealPathFromURI(String contentURI)
     {
         Uri contentUri = Uri.parse(contentURI);
-        /*
-        Cursor cursor = context.getContentResolver().query(contentUri, null, null, null, null);
-        if(cursor != null && cursor.moveToFirst())
-        {
-            int index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-            return cursor.getString(index);
-        }
-         */
         return contentUri.getPath();
     }
 

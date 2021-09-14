@@ -8,11 +8,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.graphics.Color;
 
 import androidx.annotation.NonNull;
 
-public class CustomDialog extends Dialog {
+public class CustomDialog extends Dialog
+{
 
     private String titleText;
     private String errorText;

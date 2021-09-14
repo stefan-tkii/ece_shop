@@ -5,4 +5,6 @@
 
     <solid android:color="@color/goldColor"/>
 
+    <stroke android:color="@color/black" android:width="1dp"/>
+
 </shape>

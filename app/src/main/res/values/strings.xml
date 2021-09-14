@@ -105,6 +105,18 @@
     <string name="add_product">Add product</string>
     <string name="gallery">Gallery</string>
     <string name="camera">Camera</string>
+    <string name="change_any_of_the_values">Change any of the values</string>
+    <string name="edit_product">Edit product</string>
+    <string name="profile_username">Profile username</string>
+    <string name="profile_email">Profile email</string>
+    <string name="total_orders_55">Total orders: 55</string>
+    <string name="total_value_spent_200">Total value spent: 200$</string>
+    <string name="total_amount_20000">Total amount: 20000$</string>
+    <string name="full_name">Full name</string>
+    <string name="update_profile">Update profile</string>
+    <string name="old_password">Old password</string>
+    <string name="new_password">New password</string>
+    <string name="confirm_new_password">Confirm new password</string>
 
     <string-array name="categories">
         <item>All</item>

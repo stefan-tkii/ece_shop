@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -26,7 +25,8 @@ import java.util.Objects;
 import dmax.dialog.SpotsDialog;
 import maes.tech.intentanim.CustomIntent;
 
-public class ResetPasswordActivity extends AppCompatActivity {
+public class ResetPasswordActivity extends AppCompatActivity
+{
     private EditText emailField;
     private Button resetButton;
     private ConstraintLayout container;

@@ -1,23 +1,23 @@
 package com.example.eceshop;
 
-import java.util.Date;
-
 public class Comment
 {
     private String userId;
     private String content;
     private long postedAt;
+    private boolean removed;
 
     public Comment()
     {
 
     }
 
-    public Comment(String userId, String content, long postedAt)
+    public Comment(String userId, String content, long postedAt, boolean removed)
     {
         this.userId = userId;
         this.content = content;
         this.postedAt = postedAt;
+        this.removed = removed;
     }
 
     public String getUserId()
@@ -48,6 +48,16 @@ public class Comment
     public void setPostedAt(long postedAt)
     {
         this.postedAt = postedAt;
+    }
+
+    public boolean isRemoved()
+    {
+        return removed;
+    }
+
+    public void setRemoved(boolean removed)
+    {
+        this.removed = removed;
     }
 
 }
