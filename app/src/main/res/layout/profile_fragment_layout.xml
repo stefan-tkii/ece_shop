@@ -19,7 +19,7 @@
             android:id="@+id/profile_image"
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:src="@drawable/person"
+            android:src="@drawable/user_icon"
             app:civ_border_width="1dp"
             app:civ_border_color="@android:color/darker_gray"
             android:layout_centerVertical="true"/>

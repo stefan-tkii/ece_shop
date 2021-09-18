@@ -967,6 +967,7 @@ public class ProductDetailsActivity extends AppCompatActivity
                 else if(edit)
                 {
                     Intent intent = new Intent(ProductDetailsActivity.this, HomeActivity.class);
+                    intent.putExtra(ADMIN_KEY, true);
                     startActivity(intent);
                     CustomIntent.customType(ProductDetailsActivity.this, "right-to-left");
                     finish();
@@ -1032,8 +1033,8 @@ public class ProductDetailsActivity extends AppCompatActivity
         }
         else if(edit)
         {
-            Log.e("aa", "Inside edit");
             Intent intent = new Intent(ProductDetailsActivity.this, HomeActivity.class);
+            intent.putExtra(ADMIN_KEY, true);
             startActivity(intent);
             CustomIntent.customType(ProductDetailsActivity.this, "right-to-left");
             finish();

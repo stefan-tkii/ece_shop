@@ -69,6 +69,7 @@ import maes.tech.intentanim.CustomIntent;
 
 public class EditProductActivity extends AppCompatActivity implements PhotoSourceDialog.onCameraClicked, PhotoSourceDialog.onGalleryClicked
 {
+
     private Toolbar toolbar;
     private ConstraintLayout mainContainer;
     private TextInputEditText nameText;

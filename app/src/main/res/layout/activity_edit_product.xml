@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".EditProductActivity"
     android:fitsSystemWindows="true"
-    android:background="@drawable/bg"
+    android:background="@drawable/bgx"
     android:id="@+id/edit_product_container">
 
     <androidx.appcompat.widget.Toolbar

@@ -117,6 +117,17 @@
     <string name="old_password">Old password</string>
     <string name="new_password">New password</string>
     <string name="confirm_new_password">Confirm new password</string>
+    <string name="search_by_email">Search by email</string>
+    <string name="user_s_full_name_is_here">User\'s full name is here.</string>
+    <string name="user_email_is_here">User email is here</string>
+    <string name="orders_n_a">Orders: N/A</string>
+    <string name="registered_at_15_12_2021">Registered at: 15/12/2021</string>
+    <string name="user_id_field">User ID field</string>
+    <string name="_389_78452241">+389-78452241</string>
+    <string name="macedonia">Macedonia</string>
+    <string name="orders_list">Orders list</string>
+    <string name="this_user_has_no_orders_of_this_type">This user has no orders of this type.</string>
+    <string name="status_ongoing">Status: Ongoing</string>
 
     <string-array name="categories">
         <item>All</item>
@@ -156,6 +167,18 @@
         <item>Oldest</item>
         <item>Status: Completed</item>
         <item>Status: Ongoing</item>
+        <item>Status: Cancelled</item>
+    </string-array>
+
+    <string-array name="sortUsers">
+        <item>Newest</item>
+        <item>Oldest</item>
+        <item>Active orders</item>
+    </string-array>
+
+    <string-array name="sortUserOrders">
+        <item>Status: Ongoing</item>
+        <item>Status: Completed</item>
         <item>Status: Cancelled</item>
     </string-array>
 

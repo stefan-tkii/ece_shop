@@ -48,7 +48,7 @@ import maes.tech.intentanim.CustomIntent;
 
 public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnItemSelectedListener, DashboardFragment.DashboardFragmentTouchListener,
         CartFragment.CartFragmentTouchListener, OrdersFragment.OrdersFragmentTouchListener, AddProductFragment.AddProductFragmentTouchListener,
-        ProfileFragment.ProfileFragmentTouchListener
+        ProfileFragment.ProfileFragmentTouchListener, UserManagementFragment.userManagementFragmentTouchListener
 {
 
     private FirebaseAuth mAuth;
@@ -231,7 +231,8 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         actionView.setOnClickListener(new View.OnClickListener()
         {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 onOptionsItemSelected(menuItem);
             }
         });
@@ -296,6 +297,14 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                     return true;
                 }
                 else if(selectedNavigation == POS_ADD_PRODUCT)
+                {
+                    bundle.putString("searchInput", "");
+                    bundleStatus = false;
+                    lastSearched = "";
+                    resetInput(searchView);
+                    return true;
+                }
+                else if(selectedNavigation == POS_USERS)
                 {
                     bundle.putString("searchInput", "");
                     bundleStatus = false;
@@ -445,7 +454,8 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
             ViewGroup viewGroup = (ViewGroup) view;
             for (int i = 0; i < viewGroup.getChildCount(); i++)
             {
-                if (checkFocusRec(viewGroup.getChildAt(i))) {
+                if (checkFocusRec(viewGroup.getChildAt(i)))
+                {
                     return true;
                 }
             }
@@ -542,11 +552,10 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         return icons;
     }
 
-    private void showCustomUI() {
+    private void showCustomUI()
+    {
         View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
 
@@ -564,11 +573,10 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                 super.onBackPressed();
                 return;
             }
-            else {
-
+            else
+            {
                 Toast.makeText(getBaseContext(), "Tap the back button again in order to exit.", Toast.LENGTH_SHORT).show();
             }
-
             mBackPressed = System.currentTimeMillis();
         }
     }
@@ -714,6 +722,9 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
             else
             {
                 selectedNavigation = POS_USERS;
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                        .replace(R.id.main_container, new UserManagementFragment()).commit();
                 slidingRootNav.closeMenu();
             }
         }
@@ -909,6 +920,12 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
 
     @Override
     public void onProfileFragmentTouch()
+    {
+        resetInput(searchView);
+    }
+
+    @Override
+    public void onUserManagementFragmentTouch()
     {
         resetInput(searchView);
     }

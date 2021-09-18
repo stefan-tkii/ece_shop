@@ -75,9 +75,11 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
     private List<CartItem> adapterList;
     private int counter;
     private ComplexDialog complexDialog;
+    private boolean admin;
 
     private static final String BACKEND_URL = "http://192.168.1.106:4242/";
     private static final String CLICKED_ORDER_KEY = "com.example.eceshop.CLICKED_ORDER";
+    private static final String ADMIN_KEY = "com.example.eceshop.Admin";
     private static final String CLICKED_KEY = "com.example.eceshop.CLICKED_PRODUCT";
     private static final String ORIGIN_KEY = "com.example.eceshop.ORIGIN_KEY";
     private static final String SELECT_OPTION = "com.example.eceshop.OPTION";
@@ -133,6 +135,10 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
                 {
                     complexDialog.show();
                 }
+                else if(admin)
+                {
+                    complexDialog.show();
+                }
                 else
                 {
                     CustomDialog dialog = new CustomDialog(OrderDetailsActivity.this, "Request error", "You can only cancel an order within the first 24 hours of making the order.", false);
@@ -149,6 +155,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
     private void getIntentData()
     {
         model = getIntent().getParcelableExtra(CLICKED_ORDER_KEY);
+        admin = getIntent().getBooleanExtra(ADMIN_KEY, false);
         if(model != null)
         {
             DatabaseReference firstRef = database.getReference("Orders");
@@ -363,11 +370,21 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
 
     private void onCompletedRefund()
     {
-        Intent intent = new Intent(OrderDetailsActivity.this, HomeActivity.class);
-        intent.putExtra(SELECT_OPTION, "Orders");
-        startActivity(intent);
-        CustomIntent.customType(OrderDetailsActivity.this, "right-to-left");
-        finish();
+        if(admin)
+        {
+            Intent intent = new Intent(OrderDetailsActivity.this, UserDetailsActivity.class);
+            startActivity(intent);
+            CustomIntent.customType(OrderDetailsActivity.this, "right-to-left");
+            finish();
+        }
+        else
+        {
+            Intent intent = new Intent(OrderDetailsActivity.this, HomeActivity.class);
+            intent.putExtra(SELECT_OPTION, "Orders");
+            startActivity(intent);
+            CustomIntent.customType(OrderDetailsActivity.this, "right-to-left");
+            finish();
+        }
     }
 
     @Override
@@ -376,11 +393,22 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
         switch (item.getItemId())
         {
             case android.R.id.home:
-                Intent intent = new Intent(OrderDetailsActivity.this, HomeActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                CustomIntent.customType(OrderDetailsActivity.this, "right-to-left");
-                finish();
+                if(admin)
+                {
+                    Intent intent = new Intent(OrderDetailsActivity.this, UserDetailsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    CustomIntent.customType(OrderDetailsActivity.this, "right-to-left");
+                    finish();
+                }
+                else
+                {
+                    Intent intent = new Intent(OrderDetailsActivity.this, HomeActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    CustomIntent.customType(OrderDetailsActivity.this, "right-to-left");
+                    finish();
+                }
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -389,11 +417,22 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
     @Override
     public void onBackPressed()
     {
-        Intent intent = new Intent(OrderDetailsActivity.this, HomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(intent);
-        CustomIntent.customType(OrderDetailsActivity.this, "right-to-left");
-        finish();
+        if(admin)
+        {
+            Intent intent = new Intent(OrderDetailsActivity.this, UserDetailsActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            CustomIntent.customType(OrderDetailsActivity.this, "right-to-left");
+            finish();
+        }
+        else
+        {
+            Intent intent = new Intent(OrderDetailsActivity.this, HomeActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            CustomIntent.customType(OrderDetailsActivity.this, "right-to-left");
+            finish();
+        }
     }
 
     private void changeStatusBarColor()
@@ -409,6 +448,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
         Product p = products.get(position);
         Intent intent = new Intent(this, ProductDetailsActivity.class);
         intent.putExtra(CLICKED_KEY, p);
+        intent.putExtra(ADMIN_KEY, admin);
         intent.putExtra(ORIGIN_KEY, true);
         startActivity(intent);
         CustomIntent.customType(this, "left-to-right");

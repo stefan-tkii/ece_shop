@@ -87,7 +87,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    android:gravity="fill_horizontal"
+                    android:gravity="center"
                     android:orientation="horizontal"
                     android:weightSum="100">
 
@@ -102,15 +102,17 @@
                         android:textColor="#173797"
                         android:gravity="start"
                         android:text="@string/random_order_id"
-                        android:textSize="20sp"
+                        android:textSize="16sp"
                         android:textStyle="bold"
                         android:layout_marginEnd="5dp"/>
 
                     <LinearLayout
                         android:layout_width="0dp"
+                        android:layout_marginTop="2dp"
                         android:layout_marginStart="5dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="40"
+                        android:gravity="center"
                         android:layout_gravity="center"
                         android:orientation="vertical">
 
@@ -119,6 +121,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="sans-serif-smallcaps"
                             android:gravity="start"
+                            android:layout_gravity="center"
                             android:textColor="@color/black"
                             android:id="@+id/order_details_price"
                             android:text="@string/total_amount_2000"
@@ -127,6 +130,7 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_gravity="center"
                             android:orientation="horizontal">
 
                             <TextView
@@ -275,7 +279,7 @@
             android:layout_marginBottom="5dp"
             android:id="@+id/orderDetailsItems_RecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="375dp"
+            android:layout_height="390dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/separator_cancel_btn"/>
