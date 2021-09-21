@@ -67,6 +67,12 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     private static final String SELECT_OPTION = "com.example.eceshop.OPTION";
     private static final String ADMIN_KEY = "com.example.eceshop.Admin";
 
+    private static final String CLICKED_KEY = "com.example.eceshop.CLICKED_PRODUCT";
+    private static final String PRODUCT_KEY = "com.example.eceshop.PRODUCT_VALUE";
+    private static final String NAVIGATION_FLAG = "com.example.eceshop.NAVIGATION_KEY";
+    private String origin;
+    private Product product;
+
     TextView textNotificationsItemCount;
     int mNotificationsItemCount = 1;
     private boolean admin;
@@ -120,6 +126,12 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         selectedNavigation = -1;
 
         admin = getIntent().getBooleanExtra(ADMIN_KEY, false);
+        origin = null;
+        if(getIntent().getStringExtra(NAVIGATION_FLAG) != null)
+        {
+            origin = getIntent().getStringExtra(NAVIGATION_FLAG);
+            product = getIntent().getParcelableExtra(PRODUCT_KEY);
+        }
 
         authStateListener = new FirebaseAuth.AuthStateListener()
         {
@@ -199,6 +211,18 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         if(select == null)
         {
             adapter.setSelected(POS_DASHBOARD);
+            if(origin != null)
+            {
+                if(origin.equals("notification_added"))
+                {
+                    Intent intent = new Intent(this, ProductDetailsActivity.class);
+                    intent.putExtra(CLICKED_KEY, product);
+                    intent.putExtra(ADMIN_KEY, admin);
+                    origin = null;
+                    startActivity(intent);
+                    CustomIntent.customType(this, "left-to-right");
+                }
+            }
         }
         else if(select.equals("Cart"))
         {

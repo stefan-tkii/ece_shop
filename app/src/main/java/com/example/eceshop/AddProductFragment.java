@@ -110,6 +110,9 @@ public class AddProductFragment extends Fragment implements PhotoSourceDialog.on
     private String stockInput;
     private String imageUrl;
 
+    private Product requestProduct;
+    private MessagingApiManager messagingApiManager;
+
     private boolean flag;
 
     @SuppressLint("ClickableViewAccessibility")
@@ -140,6 +143,8 @@ public class AddProductFragment extends Fragment implements PhotoSourceDialog.on
         priceInput = "";
         stockInput = "";
         imageUrl = "";
+
+        messagingApiManager = new MessagingApiManager();
 
         compressor = new ImageCompressor(getActivityNonNull());
 
@@ -548,7 +553,10 @@ public class AddProductFragment extends Fragment implements PhotoSourceDialog.on
     {
         ProductDb p = new ProductDb(name, shortDesc, longDesc, imageUrl, Double.parseDouble(priceInput), 0,
                 selectedCategory, Integer.parseInt(stockInput));
-        productsReference.push().setValue(p).addOnCompleteListener(new OnCompleteListener<Void>()
+        DatabaseReference finalRef = productsReference.push();
+        requestProduct = new Product(finalRef.getKey(), p.getName(), p.getShortDesc(), p.getLongDesc(), p.getImgUri(), p.getPrice(), p.getOrders(),
+                p.getCategoryId(), p.getInStock());
+        finalRef.setValue(p).addOnCompleteListener(new OnCompleteListener<Void>()
         {
             @Override
             public void onComplete(@NonNull Task<Void> task)
@@ -564,6 +572,7 @@ public class AddProductFragment extends Fragment implements PhotoSourceDialog.on
                     priceText.setText("");
                     stockText.setText("");
                     uploadedImageContainer.setImageResource(R.drawable.upload_placeholder);
+                    messagingApiManager.sendInformNewRequest(requestProduct);
                 }
                 else
                 {

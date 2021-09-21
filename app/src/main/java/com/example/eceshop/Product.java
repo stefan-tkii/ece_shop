@@ -3,6 +3,8 @@ package com.example.eceshop;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.Gson;
+
 public class Product implements Parcelable
 {
     private String productId;
@@ -33,6 +35,10 @@ public class Product implements Parcelable
         this.inStock = inStock;
     }
 
+    public static Product fromJson(String s)
+    {
+        return new Gson().fromJson(s, Product.class);
+    }
 
     protected Product(Parcel in)
     {
@@ -176,7 +182,8 @@ public class Product implements Parcelable
         {
             dest.writeByte((byte) 0);
         }
-        else {
+        else
+        {
             dest.writeByte((byte) 1);
             dest.writeDouble(price);
         }

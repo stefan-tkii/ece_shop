@@ -649,10 +649,10 @@ public class ProductDetailsActivity extends AppCompatActivity
                 categoryImage.setImageDrawable(categoryIcons[i]);
                 break;
             }
-            else {
+            else
+            {
                 i++;
             }
-
         }
         getComments(sortBy, nextKey);
     }

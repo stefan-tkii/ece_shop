@@ -37,6 +37,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.facebook.FacebookSdk;
 
 import java.util.Arrays;
+import java.util.Base64;
 
 import dmax.dialog.SpotsDialog;
 import maes.tech.intentanim.CustomIntent;
@@ -61,8 +62,16 @@ public class SigningActivity extends AppCompatActivity
     private static final String loginTitle = "Login";
     private static final String registerTitle = "Register";
 
+    private static final String PRODUCT_KEY = "com.example.eceshop.PRODUCT_VALUE";
+    private static final String NAVIGATION_FLAG = "com.example.eceshop.NAVIGATION_KEY";
+
+    private MessagingApiManager messagingApiManager;
+    private String origin;
+    private Product p;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signing);
         showCustomUI();
@@ -71,13 +80,19 @@ public class SigningActivity extends AppCompatActivity
         googleButton = findViewById(R.id.googleButton);
         facebookButton = findViewById(R.id.facebookButton);
 
+        origin = null;
+
         FacebookSdk.sdkInitialize(this.getApplicationContext());
         mCallbackManager = CallbackManager.Factory.create();
 
+        messagingApiManager = new MessagingApiManager();
+
         LoginManager.getInstance().registerCallback(mCallbackManager,
-                new FacebookCallback<LoginResult>() {
+                new FacebookCallback<LoginResult>()
+                {
                     @Override
-                    public void onSuccess(LoginResult loginResult) {
+                    public void onSuccess(LoginResult loginResult)
+                    {
                         progressDialog.show();
                         handleFacebookLogin(loginResult.getAccessToken());
                     }
@@ -88,7 +103,8 @@ public class SigningActivity extends AppCompatActivity
                     }
 
                     @Override
-                    public void onError(FacebookException exception) {
+                    public void onError(FacebookException exception)
+                    {
                         facebookButton.setEnabled(true);
                         CustomDialog dialog = new CustomDialog(getApplicationContext(), "Facebook Sign-In error",
                                 exception.getMessage(), false);
@@ -105,16 +121,20 @@ public class SigningActivity extends AppCompatActivity
 
         createRequest();
 
-        googleButton.setOnClickListener(new View.OnClickListener() {
+        googleButton.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 doGoogleSignIn();
             }
         });
 
-        facebookButton.setOnClickListener(new View.OnClickListener() {
+        facebookButton.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 doFacebookSignIn();
             }
         });
@@ -143,7 +163,17 @@ public class SigningActivity extends AppCompatActivity
             }
         });
 
-        final SigningAdapter adapter = new SigningAdapter(getSupportFragmentManager(), this, tabLayout.getTabCount());
+        if(getIntent().getStringExtra(NAVIGATION_FLAG) != null)
+        {
+            origin = getIntent().getStringExtra(NAVIGATION_FLAG);
+            p = getIntent().getParcelableExtra(PRODUCT_KEY);
+        }
+
+        final SigningAdapter adapter = new SigningAdapter(getSupportFragmentManager(), this, tabLayout.getTabCount(), origin);
+        if(origin != null)
+        {
+            adapter.setProduct(p);
+        }
         viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
@@ -216,7 +246,8 @@ public class SigningActivity extends AppCompatActivity
     {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
+                {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task)
                     {
@@ -236,13 +267,21 @@ public class SigningActivity extends AppCompatActivity
                                 User user = new User(fullName, email, phoneNumber, country, false);
                                 FirebaseDatabase database = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
                                 DatabaseReference mDatabase = database.getReference("Users");
-                                mDatabase.child(id).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                mDatabase.child(id).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>()
+                                {
                                     @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
+                                    public void onComplete(@NonNull Task<Void> task)
+                                    {
                                         if(task.isSuccessful())
                                         {
                                             progressDialog.dismiss();
+                                            sendWelcome();
                                             Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                                            if(origin != null)
+                                            {
+                                                intent.putExtra(PRODUCT_KEY, p);
+                                                intent.putExtra(NAVIGATION_FLAG, origin);
+                                            }
                                             startActivity(intent);
                                             CustomIntent.customType(SigningActivity.this, "left-to-right");
                                             finish();
@@ -261,12 +300,18 @@ public class SigningActivity extends AppCompatActivity
                             {
                                 progressDialog.dismiss();
                                 Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                                if(origin != null)
+                                {
+                                    intent.putExtra(PRODUCT_KEY, p);
+                                    intent.putExtra(NAVIGATION_FLAG, origin);
+                                }
                                 startActivity(intent);
                                 CustomIntent.customType(SigningActivity.this, "left-to-right");
                                 finish();
                             }
                         }
-                        else {
+                        else
+                        {
                             googleButton.setEnabled(true);
                             progressDialog.dismiss();
                             CustomDialog dialog = new CustomDialog(getApplicationContext(), "Email Sign-In error",
@@ -286,9 +331,11 @@ public class SigningActivity extends AppCompatActivity
     private void handleFacebookLogin(AccessToken token)
     {
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
-        mAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+        mAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
+        {
             @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
+            public void onComplete(@NonNull Task<AuthResult> task)
+            {
                 if(task.isSuccessful())
                 {
                     facebookButton.setEnabled(true);
@@ -305,13 +352,21 @@ public class SigningActivity extends AppCompatActivity
                         User user = new User(fullName, email, phoneNumber, country, false);
                         FirebaseDatabase database = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
                         DatabaseReference mDatabase = database.getReference("Users");
-                        mDatabase.child(id).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        mDatabase.child(id).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>()
+                        {
                             @Override
-                            public void onComplete(@NonNull Task<Void> task) {
+                            public void onComplete(@NonNull Task<Void> task)
+                            {
                                 if(task.isSuccessful())
                                 {
                                     progressDialog.dismiss();
+                                    sendWelcome();
                                     Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                                    if(origin != null)
+                                    {
+                                        intent.putExtra(PRODUCT_KEY, p);
+                                        intent.putExtra(NAVIGATION_FLAG, origin);
+                                    }
                                     startActivity(intent);
                                     CustomIntent.customType(SigningActivity.this, "left-to-right");
                                     finish();
@@ -330,6 +385,11 @@ public class SigningActivity extends AppCompatActivity
                     {
                         progressDialog.dismiss();
                         Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                        if(origin != null)
+                        {
+                            intent.putExtra(PRODUCT_KEY, p);
+                            intent.putExtra(NAVIGATION_FLAG, origin);
+                        }
                         startActivity(intent);
                         CustomIntent.customType(SigningActivity.this, "left-to-right");
                         finish();
@@ -355,20 +415,23 @@ public class SigningActivity extends AppCompatActivity
             super.onBackPressed();
             return;
         }
-        else {
-
+        else
+        {
             Toast.makeText(getBaseContext(), "Tap the back button again in order to exit.", Toast.LENGTH_SHORT).show();
         }
-
         mBackPressed = System.currentTimeMillis();
+    }
+
+    private void sendWelcome()
+    {
+        String token = SharedPreferenceManager.getInstance(SigningActivity.this).getToken();
+        messagingApiManager.sendWelcomeRequest(token);
     }
 
     private void showCustomUI()
     {
         View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
 }

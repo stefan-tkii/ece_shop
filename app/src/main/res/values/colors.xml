@@ -24,4 +24,5 @@
     <color name="productColor">#E040FB</color>
     <color name="goldColor">#FFFF00</color>
     <color name="profilesColor">#CDA200</color>
+    <color name="notifColor">#DACADC</color>
 </resources>

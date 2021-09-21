@@ -32,6 +32,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.hbb20.CountryCodePicker;
 
+import java.util.Base64;
 import java.util.Objects;
 
 import dmax.dialog.SpotsDialog;
@@ -51,6 +52,8 @@ public class RegisterFragment extends Fragment
     private ConstraintLayout registerContainer;
     private FirebaseAuth mAuth;
 
+    private MessagingApiManager messagingApiManager;
+
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
     @Override
@@ -66,6 +69,8 @@ public class RegisterFragment extends Fragment
         countryCode = root.findViewById(R.id.countryCode);
         registerButton = root.findViewById(R.id.registerButton);
         mAuth = FirebaseAuth.getInstance();
+
+        messagingApiManager = new MessagingApiManager();
 
         registerContainer = root.findViewById(R.id.register_container);
 
@@ -218,6 +223,7 @@ public class RegisterFragment extends Fragment
                                             phone.setText("");
                                             name.setText("");
                                             FirebaseAuth.getInstance().signOut();
+                                            sendWelcome();
                                             CustomDialog dialog = new CustomDialog(ctx, "Successful registration", "Your account has been created.",
                                                     true);
                                             dialog.show();
@@ -247,6 +253,12 @@ public class RegisterFragment extends Fragment
                 }
             });
         }
+    }
+
+    private void sendWelcome()
+    {
+        String token = SharedPreferenceManager.getInstance(getActivityNonNull()).getToken();
+        messagingApiManager.sendWelcomeRequest(token);
     }
 
     protected FragmentActivity getActivityNonNull()

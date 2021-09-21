@@ -60,6 +60,11 @@ public class LoginFragment extends Fragment
     private ConstraintLayout loginContainer;
     private FirebaseAuth mAuth;
 
+    private static final String PRODUCT_KEY = "com.example.eceshop.PRODUCT_VALUE";
+    private static final String NAVIGATION_FLAG = "com.example.eceshop.NAVIGATION_KEY";
+    private String origin;
+    private Product product;
+
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
     @Override
@@ -170,6 +175,17 @@ public class LoginFragment extends Fragment
         rememberMe.animate().translationX(0).alpha(1).setDuration(800).setStartDelay(700).start();
         loginButton.animate().translationX(0).alpha(1).setDuration(800).setStartDelay(700).start();
 
+        origin = null;
+        Bundle bundle = this.getArguments();
+        if(bundle != null)
+        {
+            if(bundle.getString(NAVIGATION_FLAG) != null)
+            {
+                origin = bundle.getString(NAVIGATION_FLAG);
+                product = bundle.getParcelable(PRODUCT_KEY);
+            }
+        }
+
         return root;
     }
 
@@ -179,7 +195,8 @@ public class LoginFragment extends Fragment
         {
             return super.getActivity();
         }
-        else {
+        else
+        {
             throw new RuntimeException("null returned from getActivity()");
         }
     }
@@ -300,6 +317,11 @@ public class LoginFragment extends Fragment
                     {
                         Intent intent = new Intent(getActivityNonNull(), HomeActivity.class);
                         intent.putExtra(ADMIN_KEY, true);
+                        if(origin != null)
+                        {
+                            intent.putExtra(PRODUCT_KEY, product);
+                            intent.putExtra(NAVIGATION_FLAG, origin);
+                        }
                         startActivity(intent);
                         CustomIntent.customType(getActivityNonNull(), "left-to-right");
                         getActivityNonNull().finish();
@@ -307,6 +329,11 @@ public class LoginFragment extends Fragment
                     else
                     {
                         Intent intent = new Intent(getActivityNonNull(), HomeActivity.class);
+                        if(origin != null)
+                        {
+                            intent.putExtra(PRODUCT_KEY, product);
+                            intent.putExtra(NAVIGATION_FLAG, origin);
+                        }
                         startActivity(intent);
                         CustomIntent.customType(getActivityNonNull(), "left-to-right");
                         getActivityNonNull().finish();
