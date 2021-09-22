@@ -18,6 +18,7 @@ public class SigningAdapter extends FragmentPagerAdapter
     private static final String registerTitle = "Register";
     private String origin;
     private Product p;
+    private Order o;
     private static final String PRODUCT_KEY = "com.example.eceshop.PRODUCT_VALUE";
     private static final String NAVIGATION_FLAG = "com.example.eceshop.NAVIGATION_KEY";
 
@@ -34,6 +35,11 @@ public class SigningAdapter extends FragmentPagerAdapter
         this.p = p;
     }
 
+    public void setOrder(Order o)
+    {
+        this.o = o;
+    }
+
     @NonNull
     @Override
     public Fragment getItem(int position)
@@ -44,10 +50,20 @@ public class SigningAdapter extends FragmentPagerAdapter
                 LoginFragment loginFragment = new LoginFragment();
                 if(origin != null)
                 {
-                    Bundle b = new Bundle();
-                    b.putParcelable(PRODUCT_KEY, p);
-                    b.putString(NAVIGATION_FLAG, origin);
-                    loginFragment.setArguments(b);
+                    if(origin.equals("notification_added"))
+                    {
+                        Bundle b = new Bundle();
+                        b.putParcelable(PRODUCT_KEY, p);
+                        b.putString(NAVIGATION_FLAG, origin);
+                        loginFragment.setArguments(b);
+                    }
+                    else if(origin.equals("order_change"))
+                    {
+                        Bundle b = new Bundle();
+                        b.putParcelable(PRODUCT_KEY, o);
+                        b.putString(NAVIGATION_FLAG, origin);
+                        loginFragment.setArguments(b);
+                    }
                 }
                 return loginFragment;
             case 1:

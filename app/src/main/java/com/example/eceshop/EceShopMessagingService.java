@@ -7,14 +7,11 @@ import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 public class EceShopMessagingService extends FirebaseMessagingService
 {
@@ -67,6 +64,16 @@ public class EceShopMessagingService extends FirebaseMessagingService
                 Product p = Product.fromJson(productJson);
                 notifyUserWithImage(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody(), p);
             }
+            else if(type.equals("order_change"))
+            {
+                String orderJson = data.get("object");
+                Order o = Order.fromJson(orderJson);
+                if(o == null)
+                {
+                    Log.e("AA", "NULL ORDER");
+                }
+                notifyUserOfOrderChange(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody(), o);
+            }
         }
     }
 
@@ -84,6 +91,16 @@ public class EceShopMessagingService extends FirebaseMessagingService
         intent.putExtra("object", product);
         intent.putExtra("origin", "notification_added");
         manager.showImageNotification(title, body, product.getImgUri(), intent);
+    }
+
+    public void notifyUserOfOrderChange(String title, String body, Order order)
+    {
+        EceShopNotificationManager manager = new EceShopNotificationManager(getApplicationContext());
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.putExtra("object", order);
+        intent.putExtra("origin", "order_change");
+        manager.showRegularNotification(title, body, intent);
     }
 
     public void saveToken(String token)

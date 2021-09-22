@@ -20,6 +20,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -62,6 +64,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
     private TextView dateTextView;
     private TextView etaTimeTextView;
     private AppCompatButton cancelButton;
+    private AppCompatButton completedButton;
     private RecyclerView orderItemsRecyclerView;
 
     private static AlertDialog progressDialog;
@@ -76,13 +79,17 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
     private int counter;
     private ComplexDialog complexDialog;
     private boolean admin;
+    private UserRvItem user;
+    private MessagingApiManager messagingApiManager;
 
-    private static final String BACKEND_URL = "http://192.168.1.106:4242/";
+    private static final String BACKEND_URL = "http://192.168.1.105:4242/";
+    private static final String USER_ID_KEY = "com.example.eceshop.CLICKED_USER_ID";
     private static final String CLICKED_ORDER_KEY = "com.example.eceshop.CLICKED_ORDER";
     private static final String ADMIN_KEY = "com.example.eceshop.Admin";
     private static final String CLICKED_KEY = "com.example.eceshop.CLICKED_PRODUCT";
     private static final String ORIGIN_KEY = "com.example.eceshop.ORIGIN_KEY";
     private static final String SELECT_OPTION = "com.example.eceshop.OPTION";
+    private static final String USER_DATA_KEY = "com.example.eceshop.CLICKED_USER";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -98,6 +105,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
         dateTextView = findViewById(R.id.order_details_date);
         etaTimeTextView = findViewById(R.id.order_details_eta);
         cancelButton = findViewById(R.id.refundButton);
+        completedButton = findViewById(R.id.setCompletedBtn);
         orderItemsRecyclerView = findViewById(R.id.orderDetailsItems_RecyclerView);
 
         setSupportActionBar(toolbar);
@@ -112,6 +120,8 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
                 .setCancelable(false).setTheme(R.style.CustomProgressDialog)
                 .build();
 
+        messagingApiManager = new MessagingApiManager();
+
         products = new ArrayList<>();
         adapterList = new ArrayList<>();
         adapter = new PreordersRecyclerViewAdapter(adapterList, this);
@@ -122,8 +132,6 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
 
         changeStatusBarColor();
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        userId = user.getUid();
         database = FirebaseDatabase.getInstance("https://ece-shop-default-rtdb.europe-west1.firebasedatabase.app/");
 
         cancelButton.setOnClickListener(new View.OnClickListener()
@@ -156,6 +164,36 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
     {
         model = getIntent().getParcelableExtra(CLICKED_ORDER_KEY);
         admin = getIntent().getBooleanExtra(ADMIN_KEY, false);
+
+        if(!model.getStatus().equals("Ongoing"))
+        {
+            cancelButton.setEnabled(false);
+        }
+
+        if(admin)
+        {
+            userId = getIntent().getStringExtra(USER_ID_KEY);
+            user = getIntent().getParcelableExtra(USER_DATA_KEY);
+            completedButton.setVisibility(View.VISIBLE);
+            completedButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    setOrderAsCompleted();
+                }
+            });
+            if(!model.getStatus().equals("Ongoing"))
+            {
+                completedButton.setEnabled(false);
+            }
+        }
+        else
+        {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            userId = user.getUid();
+        }
+
         if(model != null)
         {
             DatabaseReference firstRef = database.getReference("Orders");
@@ -370,21 +408,158 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
 
     private void onCompletedRefund()
     {
+        if(progressDialog.isShowing())
+        {
+            progressDialog.dismiss();
+        }
         if(admin)
         {
+            complexDialog.dismiss();
+            model.setStatus("Cancelled");
+            messagingApiManager.informOrderStatusChange(model);
             Intent intent = new Intent(OrderDetailsActivity.this, UserDetailsActivity.class);
+            intent.putExtra(USER_DATA_KEY, user);
             startActivity(intent);
             CustomIntent.customType(OrderDetailsActivity.this, "right-to-left");
             finish();
         }
         else
         {
+            complexDialog.dismiss();
             Intent intent = new Intent(OrderDetailsActivity.this, HomeActivity.class);
             intent.putExtra(SELECT_OPTION, "Orders");
             startActivity(intent);
             CustomIntent.customType(OrderDetailsActivity.this, "right-to-left");
             finish();
         }
+    }
+
+    private void setOrderAsCompleted()
+    {
+        progressDialog.show();
+        DatabaseReference firstRef = database.getReference("Orders");
+        DatabaseReference secondRef = firstRef.child(userId).getRef();
+        final HashMap<String, Object> updatesMap = new HashMap<>();
+        OrderDb item = createOrderDbFromOrder(model);
+        item.setStatus("Completed");
+        updatesMap.put(model.getOrderId(), item);
+        secondRef.updateChildren(updatesMap).addOnSuccessListener(new OnSuccessListener<Void>()
+        {
+            @Override
+            public void onSuccess(Void aVoid)
+            {
+                progressDialog.dismiss();
+                complexDialog.dismiss();
+                model.setStatus("Completed");
+                messagingApiManager.informOrderStatusChange(model);
+                Intent intent = new Intent(OrderDetailsActivity.this, UserDetailsActivity.class);
+                intent.putExtra(USER_DATA_KEY, user);
+                startActivity(intent);
+                CustomIntent.customType(OrderDetailsActivity.this, "right-to-left");
+                finish();
+            }
+        }).addOnFailureListener(new OnFailureListener()
+        {
+            @Override
+            public void onFailure(@NonNull Exception e)
+            {
+                progressDialog.dismiss();
+                complexDialog.dismiss();
+                CustomDialog dialog = new CustomDialog(OrderDetailsActivity.this, "Database/Network error", e.getMessage(), false);
+                dialog.show();
+            }
+        });
+    }
+
+    private OrderDb createOrderDbFromOrder(Order order)
+    {
+        Map<String, OrderProductContentDb> products = new HashMap<>();
+        for(OrderProductContent item : order.getProducts())
+        {
+            OrderProductContentDb toAdd = new OrderProductContentDb(item.getPrice(), item.getQuantity());
+            products.put(item.getProductId(), toAdd);
+        }
+        OrderDb retVal = new OrderDb(order.getAddress(), order.getPaymentId(), order.getPaymentMethodId(), products, order.getStatus(), order.getTimestamp());
+        return retVal;
+    }
+
+    private void updateProductsAsAdmin()
+    {
+        if(products.size() == 0)
+        {
+            performRefund();
+            return;
+        }
+        DatabaseReference productRef = database.getReference("Products");
+        DatabaseReference re = productRef.child(products.remove(0).getProductId()).getRef();
+        re.addListenerForSingleValueEvent(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot)
+            {
+                ProductDb p = snapshot.getValue(ProductDb.class);
+                int stock = p.getInStock();
+                CartItem item = adapterList.get(counter);
+                int newValue = stock + item.getQuantity();
+                HashMap<String, Object> updatesMap = new HashMap<>();
+                updatesMap.put("inStock", newValue);
+                snapshot.getRef().updateChildren(updatesMap).addOnCompleteListener(new OnCompleteListener<Void>()
+                {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task)
+                    {
+                        if(task.isSuccessful())
+                        {
+                            counter++;
+                            updateProductsAsAdmin();
+                        }
+                        else
+                        {
+                            progressDialog.dismiss();
+                            CustomDialog dialog = new CustomDialog(OrderDetailsActivity.this, "Database/Network error", task.getException().getMessage(), false);
+                            dialog.show();
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error)
+            {
+                progressDialog.dismiss();
+                CustomDialog dialog = new CustomDialog(OrderDetailsActivity.this, "Database/Network error", error.getMessage(), false);
+                dialog.show();
+            }
+        });
+    }
+
+    private void setOrderAsCancelled()
+    {
+        progressDialog.show();
+        DatabaseReference firstRef = database.getReference("Orders");
+        DatabaseReference secondRef = firstRef.child(userId).getRef();
+        final HashMap<String, Object> updatesMap = new HashMap<>();
+        OrderDb item = createOrderDbFromOrder(model);
+        item.setStatus("Cancelled");
+        updatesMap.put(model.getOrderId(), item);
+        secondRef.updateChildren(updatesMap).addOnSuccessListener(new OnSuccessListener<Void>()
+        {
+            @Override
+            public void onSuccess(Void aVoid)
+            {
+                counter = 0;
+                updateProductsAsAdmin();
+            }
+        }).addOnFailureListener(new OnFailureListener()
+        {
+            @Override
+            public void onFailure(@NonNull Exception e)
+            {
+                progressDialog.dismiss();
+                CustomDialog dialog = new CustomDialog(OrderDetailsActivity.this, "Database/Network error", e.getMessage(), false);
+                dialog.show();
+            }
+        });
     }
 
     @Override
@@ -457,7 +632,14 @@ public class OrderDetailsActivity extends AppCompatActivity implements Preorders
     @Override
     public void onProceedButtonClicked()
     {
-        deleteOrder();
+        if(admin)
+        {
+            setOrderAsCancelled();
+        }
+        else
+        {
+            deleteOrder();
+        }
     }
 
     private static final class RefundCallback implements Callback

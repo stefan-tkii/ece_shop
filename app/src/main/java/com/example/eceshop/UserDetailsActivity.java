@@ -57,11 +57,12 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
     private ProgressBar loadBar;
     private TextView placeholderTextView;
 
-    private static final int BATCH_SIZE = 3;
+    private static final int BATCH_SIZE = 6;
     private ArrayAdapter<String> arrayOrdersSort;
 
     private static final String USER_DATA_KEY = "com.example.eceshop.CLICKED_USER";
     private static final String CLICKED_ORDER_KEY = "com.example.eceshop.CLICKED_ORDER";
+    private static final String USER_ID_KEY = "com.example.eceshop.CLICKED_USER_ID";
     private static final String ADMIN_KEY = "com.example.eceshop.Admin";
     private static final String KIRO_GLIGOROV = "Macedonia (FYROM)";
     private static final String ZORAN_ZAEV = "North Macedonia";
@@ -352,6 +353,8 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
         Intent intent = new Intent(UserDetailsActivity.this, OrderDetailsActivity.class);
         intent.putExtra(CLICKED_ORDER_KEY, data);
         intent.putExtra(ADMIN_KEY, true);
+        intent.putExtra(USER_ID_KEY, model.getUserId());
+        intent.putExtra(USER_DATA_KEY, model);
         startActivity(intent);
         CustomIntent.customType(UserDetailsActivity.this, "left-to-right");
     }

@@ -18,4 +18,17 @@ public interface MessagingApi
     @Headers({"Accept: application/json"})
     Call<String> sendInformNew(@Header("Content-Type") String content_type, @Header("Authorization") String authHeader, @Body Product product);
 
+    @POST("messaging/informupdate")
+    @Headers({"Accept: application/json"})
+    Call<String> sendInformUpdate(@Header("Content-Type") String content_type, @Header("Authorization") String authHeader, @Query("status") String status,
+                                  @Body Product product);
+
+    @POST("messaging/sendthanks")
+    @Headers({"Accept: application/json"})
+    Call<String> sendThanks(@Header("Content-Type") String content_type, @Header("Authorization") String authHeader, @Query("id") String orderId);
+
+    @POST("messaging/orderchange")
+    @Headers({"Accept: application/json"})
+    Call<String> sendOrderStatusChange(@Header("Content-Type") String content_type, @Header("Authorization") String authHeader, @Body Order order);
+
 }

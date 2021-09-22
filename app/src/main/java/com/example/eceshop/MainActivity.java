@@ -18,8 +18,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -27,7 +25,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.messaging.FirebaseMessaging;
 
 import maes.tech.intentanim.CustomIntent;
 
@@ -48,9 +45,11 @@ public class MainActivity extends AppCompatActivity
     private static int SPLASH_SCREEN_DURATION = 3000;
     private static final int TIME_INTERVAL = 2000;
     private long mBackPressed;
+
     private String token;
     private String originFlag;
     private Product product;
+    private Order order;
 
     private BroadcastReceiver receiver;
 
@@ -85,7 +84,14 @@ public class MainActivity extends AppCompatActivity
         if(getIntent().getStringExtra("origin") != null)
         {
             originFlag = getIntent().getStringExtra("origin");
-            product = getIntent().getParcelableExtra("object");
+            if(originFlag.equals("notification_added"))
+            {
+                product = getIntent().getParcelableExtra("object");
+            }
+            else if(originFlag.equals("order_change"))
+            {
+                order = getIntent().getParcelableExtra("object");
+            }
         }
 
         boolean flag = checkIfLoggedIn();
@@ -133,7 +139,15 @@ public class MainActivity extends AppCompatActivity
                     Intent intent = new Intent(MainActivity.this, SigningActivity.class);
                     if(originFlag != null)
                     {
-                        intent.putExtra(PRODUCT_KEY, product);
+                        if(originFlag.equals("notification_added"))
+                        {
+                            intent.putExtra(PRODUCT_KEY, product);
+                        }
+                        else if(originFlag.equals("order_change"))
+                        {
+                            Log.e("aa", order.getOrderId());
+                            intent.putExtra(PRODUCT_KEY, order);
+                        }
                         intent.putExtra(NAVIGATION_FLAG, originFlag);
                     }
                     startActivity(intent);
@@ -178,7 +192,15 @@ public class MainActivity extends AppCompatActivity
                         Intent intent = new Intent(MainActivity.this, HomeActivity.class);
                         if(originFlag != null)
                         {
-                            intent.putExtra(PRODUCT_KEY, product);
+                            if(originFlag.equals("notification_added"))
+                            {
+                                intent.putExtra(PRODUCT_KEY, product);
+                            }
+                            else if(originFlag.equals("order_change"))
+                            {
+                                Log.e("AA", order.getOrderId());
+                                intent.putExtra(PRODUCT_KEY, order);
+                            }
                             intent.putExtra(NAVIGATION_FLAG, originFlag);
                         }
                         intent.putExtra(ADMIN_KEY, true);
@@ -191,7 +213,15 @@ public class MainActivity extends AppCompatActivity
                         Intent intent = new Intent(MainActivity.this, HomeActivity.class);
                         if(originFlag != null)
                         {
-                            intent.putExtra(PRODUCT_KEY, product);
+                            if(originFlag.equals("notification_added"))
+                            {
+                                intent.putExtra(PRODUCT_KEY, product);
+                            }
+                            else if(originFlag.equals("order_change"))
+                            {
+                                Log.e("AA", order.getOrderId());
+                                intent.putExtra(PRODUCT_KEY, order);
+                            }
                             intent.putExtra(NAVIGATION_FLAG, originFlag);
                         }
                         startActivity(intent);

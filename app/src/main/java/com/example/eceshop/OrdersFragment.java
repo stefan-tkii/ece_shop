@@ -64,7 +64,7 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
     private long nextTimestamp;
     private String nextKey;
     private int prevSize;
-    private static final int BATCH_SIZE = 3;
+    private static final int BATCH_SIZE = 6;
     private String userId;
     private List<Order> ordersList;
     private boolean madeVisible;

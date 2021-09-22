@@ -64,6 +64,7 @@ public class LoginFragment extends Fragment
     private static final String NAVIGATION_FLAG = "com.example.eceshop.NAVIGATION_KEY";
     private String origin;
     private Product product;
+    private Order order;
 
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
@@ -182,7 +183,14 @@ public class LoginFragment extends Fragment
             if(bundle.getString(NAVIGATION_FLAG) != null)
             {
                 origin = bundle.getString(NAVIGATION_FLAG);
-                product = bundle.getParcelable(PRODUCT_KEY);
+                if(origin.equals("notification_added"))
+                {
+                    product = bundle.getParcelable(PRODUCT_KEY);
+                }
+                else if(origin.equals("order_change"))
+                {
+                    order = bundle.getParcelable(PRODUCT_KEY);
+                }
             }
         }
 
@@ -319,7 +327,14 @@ public class LoginFragment extends Fragment
                         intent.putExtra(ADMIN_KEY, true);
                         if(origin != null)
                         {
-                            intent.putExtra(PRODUCT_KEY, product);
+                            if(origin.equals("notification_added"))
+                            {
+                                intent.putExtra(PRODUCT_KEY, product);
+                            }
+                            else if(origin.equals("order_change"))
+                            {
+                                intent.putExtra(PRODUCT_KEY, order);
+                            }
                             intent.putExtra(NAVIGATION_FLAG, origin);
                         }
                         startActivity(intent);
@@ -331,7 +346,14 @@ public class LoginFragment extends Fragment
                         Intent intent = new Intent(getActivityNonNull(), HomeActivity.class);
                         if(origin != null)
                         {
-                            intent.putExtra(PRODUCT_KEY, product);
+                            if(origin.equals("notification_added"))
+                            {
+                                intent.putExtra(PRODUCT_KEY, product);
+                            }
+                            else if(origin.equals("order_change"))
+                            {
+                                intent.putExtra(PRODUCT_KEY, order);
+                            }
                             intent.putExtra(NAVIGATION_FLAG, origin);
                         }
                         startActivity(intent);

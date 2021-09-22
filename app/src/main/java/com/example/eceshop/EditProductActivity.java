@@ -110,6 +110,11 @@ public class EditProductActivity extends AppCompatActivity implements PhotoSourc
 
     private boolean flag;
 
+    private boolean priceUpdated;
+    private boolean stockUpdated;
+    private Product product;
+    private MessagingApiManager messagingApiManager;
+
     private String name;
     private String shortDesc;
     private String longDesc;
@@ -141,6 +146,11 @@ public class EditProductActivity extends AppCompatActivity implements PhotoSourc
         photoUri = null;
         photoImagePath = "";
         compressedImagePath = "";
+
+        priceUpdated = false;
+        stockUpdated = false;
+
+        messagingApiManager = new MessagingApiManager();
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back_arrow);
@@ -533,6 +543,30 @@ public class EditProductActivity extends AppCompatActivity implements PhotoSourc
         final HashMap<String, Object> updatesMap = new HashMap<>();
         ProductDb updatedProduct = new ProductDb(name, shortDesc, longDesc, model.getImgUri(), price, model.getOrders(), selectedCategory,
                 stock);
+
+        if((model.getPrice() != price) && (model.getInStock() != stock))
+        {
+            priceUpdated = true;
+            stockUpdated = true;
+        }
+        else if(model.getPrice() != price)
+        {
+            priceUpdated = true;
+            stockUpdated = false;
+        }
+        else if(model.getInStock() != stock)
+        {
+            priceUpdated = false;
+            stockUpdated = true;
+        }
+        else
+        {
+            priceUpdated = false;
+            stockUpdated = false;
+        }
+        product = new Product(model.getProductId(), updatedProduct.getName(), updatedProduct.getShortDesc(), updatedProduct.getLongDesc(),
+                updatedProduct.getImgUri(), updatedProduct.getPrice(), updatedProduct.getOrders(), updatedProduct.getCategoryId(), updatedProduct.getInStock());
+
         updatesMap.put(model.getProductId(), updatedProduct);
         productsReference.updateChildren(updatesMap).addOnSuccessListener(new OnSuccessListener<Void>()
         {
@@ -546,6 +580,20 @@ public class EditProductActivity extends AppCompatActivity implements PhotoSourc
                 model.setPrice(price);
                 model.setInStock(stock);
                 model.setCategoryId(selectedCategory);
+
+                if(priceUpdated && stockUpdated)
+                {
+                    messagingApiManager.sendUpdatedProductInfo(product, 1);
+                }
+                else if(priceUpdated)
+                {
+                    messagingApiManager.sendUpdatedProductInfo(product, 2);
+                }
+                else if(stockUpdated)
+                {
+                    messagingApiManager.sendUpdatedProductInfo(product, 3);
+                }
+
                 Intent intent = new Intent(EditProductActivity.this, ProductDetailsActivity.class);
                 intent.putExtra(CLICKED_KEY, model);
                 intent.putExtra(ADMIN_KEY, true);
@@ -653,6 +701,30 @@ public class EditProductActivity extends AppCompatActivity implements PhotoSourc
         final HashMap<String, Object> updatesMap = new HashMap<>();
         ProductDb updatedProduct = new ProductDb(name, shortDesc, longDesc, imageUrl, price, model.getOrders(), selectedCategory,
                 stock);
+
+        if((model.getPrice() != price) && (model.getInStock() != stock))
+        {
+            priceUpdated = true;
+            stockUpdated = true;
+        }
+        else if(model.getPrice() != price)
+        {
+            priceUpdated = true;
+            stockUpdated = false;
+        }
+        else if(model.getInStock() != stock)
+        {
+            priceUpdated = false;
+            stockUpdated = true;
+        }
+        else
+        {
+            priceUpdated = false;
+            stockUpdated = false;
+        }
+        product = new Product(model.getProductId(), updatedProduct.getName(), updatedProduct.getShortDesc(), updatedProduct.getLongDesc(),
+                updatedProduct.getImgUri(), updatedProduct.getPrice(), updatedProduct.getOrders(), updatedProduct.getCategoryId(), updatedProduct.getInStock());
+
         updatesMap.put(model.getProductId(), updatedProduct);
         productsReference.updateChildren(updatesMap).addOnSuccessListener(new OnSuccessListener<Void>()
         {
@@ -667,6 +739,20 @@ public class EditProductActivity extends AppCompatActivity implements PhotoSourc
                 model.setPrice(price);
                 model.setInStock(stock);
                 model.setCategoryId(selectedCategory);
+
+                if(priceUpdated && stockUpdated)
+                {
+                    messagingApiManager.sendUpdatedProductInfo(product, 1);
+                }
+                else if(priceUpdated)
+                {
+                    messagingApiManager.sendUpdatedProductInfo(product, 2);
+                }
+                else if(stockUpdated)
+                {
+                    messagingApiManager.sendUpdatedProductInfo(product, 3);
+                }
+
                 Intent intent = new Intent(EditProductActivity.this, ProductDetailsActivity.class);
                 intent.putExtra(CLICKED_KEY, model);
                 intent.putExtra(ADMIN_KEY, true);

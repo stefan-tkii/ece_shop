@@ -68,10 +68,13 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     private static final String ADMIN_KEY = "com.example.eceshop.Admin";
 
     private static final String CLICKED_KEY = "com.example.eceshop.CLICKED_PRODUCT";
+    private static final String CLICKED_ORDER_KEY = "com.example.eceshop.CLICKED_ORDER";
     private static final String PRODUCT_KEY = "com.example.eceshop.PRODUCT_VALUE";
     private static final String NAVIGATION_FLAG = "com.example.eceshop.NAVIGATION_KEY";
+
     private String origin;
     private Product product;
+    private Order order;
 
     TextView textNotificationsItemCount;
     int mNotificationsItemCount = 1;
@@ -106,6 +109,7 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
         showCustomUI();
         mAuth = FirebaseAuth.getInstance();
         Log.e("Home", "Inside on create of home activity.");
@@ -130,7 +134,14 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         if(getIntent().getStringExtra(NAVIGATION_FLAG) != null)
         {
             origin = getIntent().getStringExtra(NAVIGATION_FLAG);
-            product = getIntent().getParcelableExtra(PRODUCT_KEY);
+            if(origin.equals("notification_added"))
+            {
+                product = getIntent().getParcelableExtra(PRODUCT_KEY);
+            }
+            else if(origin.equals("order_change"))
+            {
+                order = getIntent().getParcelableExtra(PRODUCT_KEY);
+            }
         }
 
         authStateListener = new FirebaseAuth.AuthStateListener()
@@ -210,11 +221,11 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
 
         if(select == null)
         {
-            adapter.setSelected(POS_DASHBOARD);
             if(origin != null)
             {
                 if(origin.equals("notification_added"))
                 {
+                    adapter.setSelected(POS_DASHBOARD);
                     Intent intent = new Intent(this, ProductDetailsActivity.class);
                     intent.putExtra(CLICKED_KEY, product);
                     intent.putExtra(ADMIN_KEY, admin);
@@ -222,6 +233,19 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                     startActivity(intent);
                     CustomIntent.customType(this, "left-to-right");
                 }
+                else if(origin.equals("order_change"))
+                {
+                    adapter.setSelected(POS_ORDERS);
+                    Intent intent = new Intent(this, OrderDetailsActivity.class);
+                    intent.putExtra(CLICKED_ORDER_KEY, order);
+                    origin = null;
+                    startActivity(intent);
+                    CustomIntent.customType(this, "left-to-right");
+                }
+            }
+            else
+            {
+                adapter.setSelected(POS_DASHBOARD);
             }
         }
         else if(select.equals("Cart"))

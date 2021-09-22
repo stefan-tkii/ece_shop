@@ -128,6 +128,7 @@
     <string name="orders_list">Orders list</string>
     <string name="this_user_has_no_orders_of_this_type">This user has no orders of this type.</string>
     <string name="status_ongoing">Status: Ongoing</string>
+    <string name="set_completed">Set completed</string>
 
     <string-array name="categories">
         <item>All</item>

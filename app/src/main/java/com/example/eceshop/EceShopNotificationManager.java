@@ -17,11 +17,8 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.FutureTarget;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
-
-import java.util.concurrent.ExecutionException;
 
 public class EceShopNotificationManager
 {
@@ -43,7 +40,8 @@ public class EceShopNotificationManager
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
         {
-            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Ece shop notifications", NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Ece shop notifications",
+                    NotificationManager.IMPORTANCE_DEFAULT);
 
             notificationChannel.setDescription("Main notification channel of Ece shop.");
             notificationChannel.enableLights(true);
@@ -58,7 +56,8 @@ public class EceShopNotificationManager
     {
         PendingIntent pendingIntent = PendingIntent.getActivity(context, NOTIFICATION_ID_REG, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID);
-        Notification notif = builder.setSmallIcon(R.drawable.ic_notify)
+        Notification notif = builder.setStyle(new NotificationCompat.BigTextStyle())
+                .setSmallIcon(R.drawable.ic_notify)
                 .setColor(context.getResources().getColor(R.color.yesColor))
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent)
@@ -72,35 +71,32 @@ public class EceShopNotificationManager
 
     public void showImageNotification(String title, String body, String src, Intent intent)
     {
-        Glide.with(context)
-                .asBitmap()
-                .load(src)
-                .fitCenter()
-                .into(new CustomTarget<Bitmap>()
-                {
-                    @Override
-                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition)
-                    {
-                        PendingIntent pendingIntent = PendingIntent.getActivity(context, NOTIFICATION_ID_IMG, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID);
-                        Notification notif = builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(resource))
-                                .setSmallIcon(R.drawable.ic_notify)
-                                .setColor(context.getResources().getColor(R.color.yesColor))
-                                .setAutoCancel(true)
-                                .setContentIntent(pendingIntent)
-                                .setContentTitle(title)
-                                .setContentText(body)
-                                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.large_notify))
-                                .build();
-                        notif.flags |= Notification.FLAG_AUTO_CANCEL;
-                        notificationManager.notify(NOTIFICATION_ID_IMG, notif);
-                    }
+        Glide.with(context).asBitmap().load(src).fitCenter().into(new CustomTarget<Bitmap>()
+        {
+            @Override
+            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition)
+            {
+                PendingIntent pendingIntent = PendingIntent.getActivity(context, NOTIFICATION_ID_IMG, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID);
+                Notification notif = builder.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(resource))
+                        .setSmallIcon(R.drawable.ic_notify)
+                        .setColor(context.getResources().getColor(R.color.yesColor))
+                        .setAutoCancel(true)
+                        .setContentIntent(pendingIntent)
+                        .setContentTitle(title)
+                        .setContentText(body)
+                        .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.large_notify))
+                        .build();
+                notif.flags |= Notification.FLAG_AUTO_CANCEL;
+                notificationManager.notify(NOTIFICATION_ID_IMG, notif);
+            }
 
-                    @Override
-                    public void onLoadCleared(@Nullable Drawable placeholder)
-                    {
+             @Override
+             public void onLoadCleared(@Nullable Drawable placeholder)
+             {
 
-                    }
-                });
+             }
+        });
     }
+
 }

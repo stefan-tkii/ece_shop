@@ -3,6 +3,8 @@ package com.example.eceshop;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,11 @@ public class Order implements Parcelable
         this.products = products;
         this.status = status;
         this.timestamp = timestamp;
+    }
+
+    public static Order fromJson(String s)
+    {
+        return new Gson().fromJson(s, Order.class);
     }
 
     protected Order(Parcel in)

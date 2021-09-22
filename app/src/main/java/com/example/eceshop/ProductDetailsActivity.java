@@ -48,6 +48,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -589,9 +590,27 @@ public class ProductDetailsActivity extends AppCompatActivity
             {
                 if(task.isSuccessful())
                 {
-                    progressDialog.dismiss();
-                    CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Product status", "Successfully added this product to your cart.", true);
-                    dialog.show();
+                    FirebaseMessaging.getInstance().subscribeToTopic(model.getProductId()).addOnCompleteListener(new OnCompleteListener<Void>()
+                    {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task)
+                        {
+                            if(task.isSuccessful())
+                            {
+                                Log.e("Subscription success","Subscribed to products topic.");
+                                progressDialog.dismiss();
+                                CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Product status", "Successfully added this product to your cart.", true);
+                                dialog.show();
+                            }
+                            else
+                            {
+                                Log.e("Subscription error", task.getException().getMessage());
+                                progressDialog.dismiss();
+                                CustomDialog dialog = new CustomDialog(ProductDetailsActivity.this, "Product status", "Successfully added this product to your cart.", true);
+                                dialog.show();
+                            }
+                        }
+                    });
                 }
                 else
                 {

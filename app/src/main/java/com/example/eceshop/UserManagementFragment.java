@@ -66,7 +66,7 @@ public class UserManagementFragment extends Fragment implements UserItemRecycler
 
     private static final String USER_DATA_KEY = "com.example.eceshop.CLICKED_USER";
 
-    private static final int BATCH_SIZE = 3;
+    private static final int BATCH_SIZE = 6;
     private boolean loadMore;
     private boolean running;
     private String sortBy;

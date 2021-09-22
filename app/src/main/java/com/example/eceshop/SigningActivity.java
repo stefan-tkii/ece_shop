@@ -68,6 +68,7 @@ public class SigningActivity extends AppCompatActivity
     private MessagingApiManager messagingApiManager;
     private String origin;
     private Product p;
+    private Order o;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -166,13 +167,27 @@ public class SigningActivity extends AppCompatActivity
         if(getIntent().getStringExtra(NAVIGATION_FLAG) != null)
         {
             origin = getIntent().getStringExtra(NAVIGATION_FLAG);
-            p = getIntent().getParcelableExtra(PRODUCT_KEY);
+            if(origin.equals("notification_added"))
+            {
+                p = getIntent().getParcelableExtra(PRODUCT_KEY);
+            }
+            else if(origin.equals("order_change"))
+            {
+                o = getIntent().getParcelableExtra(PRODUCT_KEY);
+            }
         }
 
         final SigningAdapter adapter = new SigningAdapter(getSupportFragmentManager(), this, tabLayout.getTabCount(), origin);
         if(origin != null)
         {
-            adapter.setProduct(p);
+            if(origin.equals("notification_added"))
+            {
+                adapter.setProduct(p);
+            }
+            else if(origin.equals("order_change"))
+            {
+                adapter.setOrder(o);
+            }
         }
         viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
@@ -279,7 +294,14 @@ public class SigningActivity extends AppCompatActivity
                                             Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                                             if(origin != null)
                                             {
-                                                intent.putExtra(PRODUCT_KEY, p);
+                                                if(origin.equals("notification_added"))
+                                                {
+                                                    intent.putExtra(PRODUCT_KEY, p);
+                                                }
+                                                else if(origin.equals("order_change"))
+                                                {
+                                                    intent.putExtra(PRODUCT_KEY, o);
+                                                }
                                                 intent.putExtra(NAVIGATION_FLAG, origin);
                                             }
                                             startActivity(intent);
@@ -302,7 +324,14 @@ public class SigningActivity extends AppCompatActivity
                                 Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                                 if(origin != null)
                                 {
-                                    intent.putExtra(PRODUCT_KEY, p);
+                                    if(origin.equals("notification_added"))
+                                    {
+                                        intent.putExtra(PRODUCT_KEY, p);
+                                    }
+                                    else if(origin.equals("order_change"))
+                                    {
+                                        intent.putExtra(PRODUCT_KEY, o);
+                                    }
                                     intent.putExtra(NAVIGATION_FLAG, origin);
                                 }
                                 startActivity(intent);
@@ -364,7 +393,14 @@ public class SigningActivity extends AppCompatActivity
                                     Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                                     if(origin != null)
                                     {
-                                        intent.putExtra(PRODUCT_KEY, p);
+                                        if(origin.equals("notification_added"))
+                                        {
+                                            intent.putExtra(PRODUCT_KEY, p);
+                                        }
+                                        else if(origin.equals("order_change"))
+                                        {
+                                            intent.putExtra(PRODUCT_KEY, o);
+                                        }
                                         intent.putExtra(NAVIGATION_FLAG, origin);
                                     }
                                     startActivity(intent);
@@ -387,7 +423,14 @@ public class SigningActivity extends AppCompatActivity
                         Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                         if(origin != null)
                         {
-                            intent.putExtra(PRODUCT_KEY, p);
+                            if(origin.equals("notification_added"))
+                            {
+                                intent.putExtra(PRODUCT_KEY, p);
+                            }
+                            else if(origin.equals("order_change"))
+                            {
+                                intent.putExtra(PRODUCT_KEY, o);
+                            }
                             intent.putExtra(NAVIGATION_FLAG, origin);
                         }
                         startActivity(intent);

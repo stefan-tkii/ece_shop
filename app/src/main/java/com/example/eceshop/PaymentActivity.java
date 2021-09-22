@@ -42,6 +42,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hbb20.CountryCodePicker;
@@ -75,7 +76,7 @@ import okhttp3.Response;
 public class PaymentActivity extends AppCompatActivity
 {
     
-    private static final String BACKEND_URL = "http://192.168.1.106:4242/";
+    private static final String BACKEND_URL = "http://192.168.1.105:4242/";
     private static final String PUBLISHABLE_KEY = "pk_test_51JVv5lGfuf9wZawU43O2I3f7KDT01SDh2LeKBTKOUs656H4s5vTJ0dndQaEON3TyOilFcbP1qCcQCNmVUqglzU3Q00qaQ7TiR8";
     private static final String SELECT_OPTION = "com.example.eceshop.OPTION";
 
@@ -111,6 +112,9 @@ public class PaymentActivity extends AppCompatActivity
     private OkHttpClient httpClient;
     private FirebaseDatabase database;
     private Geocoder geocoder;
+    private String productId;
+
+    private MessagingApiManager messagingApiManager;
 
     private static final String BUTTON_KEY = "com.example.eceshop.INTENT_ORIGIN";
     private static final String DATA = "com.example.eceshop.DATA_KEY";
@@ -143,6 +147,10 @@ public class PaymentActivity extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         changeStatusBarColor();
+
+        productId = "";
+
+        messagingApiManager = new MessagingApiManager();
 
         geocoder = new Geocoder(this);
 
@@ -533,7 +541,23 @@ public class PaymentActivity extends AppCompatActivity
                                 DatabaseReference mainRef = database.getReference("Carts");
                                 DatabaseReference userIdRef = mainRef.child(userId).getRef();
                                 DatabaseReference cartItemsRef = userIdRef.child("CartItems");
-                                deleteCartProducts(ids, cartItemsRef);
+                                FirebaseMessaging.getInstance().subscribeToTopic(orderId).addOnCompleteListener(new OnCompleteListener<Void>()
+                                {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task)
+                                    {
+                                        if(task.isSuccessful())
+                                        {
+                                            Log.e("Subscription success","Subscribed to products topic.");
+                                            deleteCartProducts(ids, cartItemsRef);
+                                        }
+                                        else
+                                        {
+                                            Log.e("Subscription error", task.getException().getMessage());
+                                            deleteCartProducts(ids, cartItemsRef);
+                                        }
+                                    }
+                                });
                             }
                             else
                             {
@@ -744,6 +768,7 @@ public class PaymentActivity extends AppCompatActivity
             updateProducts(idsList, r);
             return;
         }
+        productId = list.get(0);
         DatabaseReference ref = reference.child(list.remove(0)).getRef();
         ref.addListenerForSingleValueEvent(new ValueEventListener()
         {
@@ -759,7 +784,23 @@ public class PaymentActivity extends AppCompatActivity
                         {
                             if(task.isSuccessful())
                             {
-                                deleteCartProducts(list, reference);
+                                FirebaseMessaging.getInstance().unsubscribeFromTopic(productId).addOnCompleteListener(new OnCompleteListener<Void>()
+                                {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task)
+                                    {
+                                        if(task.isSuccessful())
+                                        {
+                                            Log.e("Unsub", "Success");
+                                            deleteCartProducts(list, reference);
+                                        }
+                                        else
+                                        {
+                                            Log.e("Unsub", "Failure");
+                                            deleteCartProducts(list, reference);
+                                        }
+                                    }
+                                });
                             }
                             else
                             {
@@ -793,6 +834,7 @@ public class PaymentActivity extends AppCompatActivity
             else
             {
                 progressDialog.dismiss();
+                messagingApiManager.sendThankYouRequest(orderId);
                 Intent intent = new Intent(PaymentActivity.this, HomeActivity.class);
                 intent.putExtra(SELECT_OPTION, "Orders");
                 startActivity(intent);
@@ -865,6 +907,7 @@ public class PaymentActivity extends AppCompatActivity
                 if(task.isSuccessful())
                 {
                     progressDialog.dismiss();
+                    messagingApiManager.sendThankYouRequest(orderId);
                     Intent intent = new Intent(PaymentActivity.this, HomeActivity.class);
                     intent.putExtra(SELECT_OPTION, "Orders");
                     startActivity(intent);

@@ -1,6 +1,5 @@
 package com.example.eceshop;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -65,11 +64,95 @@ public class MessagingApiManager
         });
     }
 
+    public void sendThankYouRequest(String orderId)
+    {
+        String authValue = ADMIN_ID + ":" + ADMIN_PASS;
+        String authHead = "Basic " + Base64.getEncoder().encodeToString(authValue.getBytes());
+        Call<String> callRequest = apiCallManager.sendThanks(CONTENT_TYPE, authHead, orderId);
+        callRequest.enqueue(new Callback<String>()
+        {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response)
+            {
+                if(!response.isSuccessful())
+                {
+                    Log.e("Api Request Failure", response.code() + response.body());
+                }
+                else
+                {
+                    Log.e("Api Request Successful", response.code() + response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t)
+            {
+                Log.e("Api Error", t.getMessage());
+            }
+        });
+    }
+
     public void sendInformNewRequest(Product product)
     {
         String authValue = ADMIN_ID + ":" + ADMIN_PASS;
         String authHead = "Basic " + Base64.getEncoder().encodeToString(authValue.getBytes());
         Call<String> callRequest = apiCallManager.sendInformNew(CONTENT_TYPE, authHead, product);
+        callRequest.enqueue(new Callback<String>()
+        {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response)
+            {
+                if(!response.isSuccessful())
+                {
+                    Log.e("Api Request Failure", response.code() + response.body());
+                }
+                else
+                {
+                    Log.e("Api Request Successful", response.code() + response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t)
+            {
+                Log.e("Api Error", t.getMessage());
+            }
+        });
+    }
+
+    public void sendUpdatedProductInfo(Product product, int updateStatus)
+    {
+        String authValue = ADMIN_ID + ":" + ADMIN_PASS;
+        String authHead = "Basic " + Base64.getEncoder().encodeToString(authValue.getBytes());
+        Call<String> callRequest = apiCallManager.sendInformUpdate(CONTENT_TYPE, authHead, String.valueOf(updateStatus), product);
+        callRequest.enqueue(new Callback<String>()
+        {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response)
+            {
+                if(!response.isSuccessful())
+                {
+                    Log.e("Api Request Failure", response.code() + response.body());
+                }
+                else
+                {
+                    Log.e("Api Request Successful", response.code() + response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t)
+            {
+                Log.e("Api Error", t.getMessage());
+            }
+        });
+    }
+
+    public void informOrderStatusChange(Order order)
+    {
+        String authValue = ADMIN_ID + ":" + ADMIN_PASS;
+        String authHead = "Basic " + Base64.getEncoder().encodeToString(authValue.getBytes());
+        Call<String> callRequest = apiCallManager.sendOrderStatusChange(CONTENT_TYPE, authHead, order);
         callRequest.enqueue(new Callback<String>()
         {
             @Override

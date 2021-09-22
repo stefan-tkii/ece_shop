@@ -223,26 +223,54 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/refundButton"
-            android:layout_width="300dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:drawableStart="@drawable/ic_close"
-            android:drawablePadding="2dp"
             android:gravity="center"
-            android:paddingStart="80dp"
-            android:layout_marginTop="10dp"
-            android:drawableTint="@color/mainTextColor"
-            android:paddingEnd="80dp"
-            android:singleLine="true"
-            android:background="@drawable/add_cart_button_bg"
-            android:text="@string/cancel_order"
-            android:textColor="@color/mainTextColor"
+            android:layout_marginTop="15dp"
+            android:id="@+id/buttons_container"
+            android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/order_details_card"
-            android:textSize="15sp"/>
+            app:layout_constraintTop_toBottomOf="@+id/order_details_card">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/refundButton"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:drawableStart="@drawable/ic_close"
+                android:drawablePadding="2dp"
+                android:gravity="center"
+                android:paddingStart="80dp"
+                android:drawableTint="@color/mainTextColor"
+                android:paddingEnd="80dp"
+                android:singleLine="true"
+                android:background="@drawable/add_cart_button_bg"
+                android:text="@string/cancel_order"
+                android:textColor="@color/mainTextColor"
+                android:textSize="15sp"/>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/setCompletedBtn"
+                android:layout_width="300dp"
+                android:layout_marginTop="15dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:drawableStart="@drawable/ic_checkline"
+                android:drawablePadding="2dp"
+                android:gravity="center"
+                android:paddingStart="70dp"
+                android:drawableTint="#76FD17"
+                android:visibility="gone"
+                android:paddingEnd="70dp"
+                android:singleLine="true"
+                android:background="@drawable/gradient_btn_bg"
+                android:text="@string/set_completed"
+                android:textColor="#76FD17"
+                android:textSize="15sp"/>
+
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
@@ -251,7 +279,7 @@
             android:text="@string/order_items"
             android:textStyle="bold"
             android:textSize="20sp"
-            app:layout_constraintTop_toBottomOf="@id/refundButton"
+            app:layout_constraintTop_toBottomOf="@id/buttons_container"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="10dp"
@@ -279,7 +307,7 @@
             android:layout_marginBottom="5dp"
             android:id="@+id/orderDetailsItems_RecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="390dp"
+            android:layout_height="300dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/separator_cancel_btn"/>
