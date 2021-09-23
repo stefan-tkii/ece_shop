@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -68,6 +69,7 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
     private String userId;
     private List<Order> ordersList;
     private boolean madeVisible;
+    private String status;
     private OrderRecyclerViewAdapter ordersAdapter;
 
     @SuppressLint("ClickableViewAccessibility")
@@ -87,6 +89,7 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
         loadMore = true;
         running = false;
         sortBy = "Latest";
+        status = "";
         ordersList = new ArrayList<>();
         resetKeys();
 
@@ -160,13 +163,19 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
                 }
                 if(scrollY == (v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight()))
                 {
-                    backToTop.setVisibility(View.VISIBLE);
-                    if(loadMore)
+                    if(!running)
                     {
-                        if(!running)
+                        Log.e("aa", "Not running");
+                        if(loadMore)
                         {
+                            Log.e("aa", "LOAD MOREE");
                             loadBar.setVisibility(View.VISIBLE);
                             getOrders();
+                        }
+                        else
+                        {
+                            Log.e("aa", "DON'T LOAD MOREE");
+                            backToTop.setVisibility(View.VISIBLE);
                         }
                     }
                 }
@@ -332,6 +341,7 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
                     {
                         if(snapshot.exists())
                         {
+                            boolean added = false;
                             for(DataSnapshot snap : snapshot.getChildren())
                             {
                                 String id = snap.getKey();
@@ -339,11 +349,20 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
                                 if(value != null)
                                 {
                                     Order item = createOrder(id, value);
-                                    ordersList.add(item);
+                                    if(item.getStatus().equals(status))
+                                    {
+                                        ordersList.add(item);
+                                        added = true;
+                                    }
                                     nextKey = item.getOrderId();
                                 }
                             }
                             running = false;
+                            if(!added)
+                            {
+                                getOrders();
+                                return;
+                            }
                             loadBar.setVisibility(View.GONE);
                             if(madeVisible)
                             {
@@ -364,7 +383,7 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
                             }
                             else
                             {
-                                Toast.makeText(getActivityNonNull(), "No more orders left to display.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivityNonNull(), "No more orders left to display for this filtering.", Toast.LENGTH_SHORT).show();
                             }
                         }
                     }
@@ -388,6 +407,7 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
         }
         else
         {
+            Log.e("aa", status);
             Toast.makeText(getActivityNonNull(), "Cannot sort the orders in this way.", Toast.LENGTH_SHORT).show();
         }
     }
@@ -401,7 +421,7 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
             {
                 return secRef.orderByChild("timestamp").limitToFirst(BATCH_SIZE);
             }
-            secRef.orderByChild("timestamp").startAfter(nextTimestamp).limitToFirst(BATCH_SIZE);
+            return secRef.orderByChild("timestamp").startAfter(nextTimestamp).limitToFirst(BATCH_SIZE);
         }
         else if(sortBy.equals("Latest"))
         {
@@ -409,31 +429,15 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
             {
                 return secRef.orderByChild("timestamp").limitToLast(BATCH_SIZE);
             }
-            secRef.orderByChild("timestamp").endBefore(nextTimestamp).limitToLast(BATCH_SIZE);
+            return secRef.orderByChild("timestamp").endBefore(nextTimestamp).limitToLast(BATCH_SIZE);
         }
-        else if(sortBy.equals("Status: Completed"))
+        else if(sortBy.equals("Status: Ongoing") || sortBy.equals("Status: Cancelled") || sortBy.equals("Status: Completed"))
         {
             if(nextKey == null)
             {
-                return secRef.orderByChild("status").equalTo("Completed").limitToFirst(BATCH_SIZE);
+                return secRef.orderByKey().limitToFirst(BATCH_SIZE);
             }
-            secRef.orderByChild("status").equalTo("Completed").startAfter("Completed", nextKey).limitToFirst(3);
-        }
-        else if(sortBy.equals("Status: Ongoing"))
-        {
-            if(nextKey == null)
-            {
-                return secRef.orderByChild("status").equalTo("Ongoing").limitToFirst(BATCH_SIZE);
-            }
-            secRef.orderByChild("status").equalTo("Ongoing").startAfter("Ongoing", nextKey).limitToFirst(3);
-        }
-        else if(sortBy.equals("Status: Cancelled"))
-        {
-            if(nextKey == null)
-            {
-                return secRef.orderByChild("status").equalTo("Cancelled").limitToFirst(BATCH_SIZE);
-            }
-            secRef.orderByChild("status").equalTo("Cancelled").startAfter("Cancelled", nextKey).limitToFirst(3);
+            return secRef.orderByKey().startAfter(nextKey).limitToFirst(BATCH_SIZE);
         }
         return null;
     }
@@ -477,6 +481,11 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
                 {
                     sortBy = item;
                     resetKeys();
+                    if(sortBy.equals("Status: Ongoing") || sortBy.equals("Status: Cancelled") || sortBy.equals("Status: Completed"))
+                    {
+                        String helper = sortBy.split(":")[1];
+                        status = helper.trim();
+                    }
                     ordersList.clear();
                     ordersAdapter.notifyDataSetChanged();
                     loadMore = true;
@@ -542,6 +551,7 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
     private void resetKeys()
     {
         nextKey = null;
+        status = "";
         nextTimestamp = 0L;
     }
 

@@ -283,13 +283,13 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
                                 nextKey = id;
                             }
                         }
-                        loadBar.setVisibility(View.GONE);
                         running = false;
                         if(!added)
                         {
                             getUserOrders();
                             return;
                         }
+                        loadBar.setVisibility(View.GONE);
                         if(ordersList.size() > 0)
                         {
                             double total = 0d;

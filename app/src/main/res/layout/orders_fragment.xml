@@ -32,7 +32,6 @@
         android:descendantFocusability="blocksDescendants">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_marginTop="5dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/orders_content_container">
@@ -59,6 +58,7 @@
                     android:textSize="20sp"
                     android:gravity="bottom"
                     android:textColor="@color/black"
+                    android:layout_gravity="bottom"
                     android:layout_marginEnd="5dp"
                     android:layout_marginStart="10dp"/>
 
@@ -96,7 +96,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/orders_top_layout"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="2dp"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"/>
 
