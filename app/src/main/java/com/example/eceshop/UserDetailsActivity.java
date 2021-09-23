@@ -11,6 +11,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -74,6 +75,7 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
     private boolean loadMore;
     private String sortBy;
     private String nextKey;
+    private String status;
     private List<Order> ordersList;
     private OrderRecyclerViewAdapter ordersAdapter;
 
@@ -106,6 +108,7 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
         placeholderTextView = findViewById(R.id.user_details_placeholder);
 
         sortBy = "Status: Ongoing";
+        status = "Ongoing";
         nextKey = "";
         ordersList = new ArrayList<>();
         running = false;
@@ -154,17 +157,17 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
                 }
                 if(scrollY == (v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight()))
                 {
-                    backToTop.setVisibility(View.VISIBLE);
                     if(!running)
                     {
                         if(loadMore)
                         {
+                            backToTop.setVisibility(View.VISIBLE);
                             loadBar.setVisibility(View.VISIBLE);
                             getUserOrders();
                         }
                         else
                         {
-                            Toast.makeText(UserDetailsActivity.this, "No more orders left to display for this filtering.", Toast.LENGTH_SHORT).show();
+                            backToTop.setVisibility(View.VISIBLE);
                         }
                     }
                 }
@@ -264,6 +267,7 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
                 {
                     if(snapshot.exists())
                     {
+                        boolean added = false;
                         for(DataSnapshot snap : snapshot.getChildren())
                         {
                             String id = snap.getKey();
@@ -271,12 +275,21 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
                             if(value != null)
                             {
                                 Order item = createOrder(id, value);
-                                ordersList.add(item);
+                                if(item.getStatus().equals(status))
+                                {
+                                    ordersList.add(item);
+                                    added = true;
+                                }
                                 nextKey = id;
                             }
                         }
                         loadBar.setVisibility(View.GONE);
                         running = false;
+                        if(!added)
+                        {
+                            getUserOrders();
+                            return;
+                        }
                         if(ordersList.size() > 0)
                         {
                             double total = 0d;
@@ -303,14 +316,21 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
                     }
                     else
                     {
-                        String totalOrder = "Total orders: 0";
-                        totalOrdersTextView.setText(totalOrder);
-                        String totalAmount = "Total amount : 0$";
-                        totalAmountTextView.setText(totalAmount);
                         running = false;
                         loadMore = false;
                         loadBar.setVisibility(View.GONE);
-                        placeholderTextView.setVisibility(View.VISIBLE);
+                        if(ordersList.size() == 0)
+                        {
+                            String totalOrder = "Total orders: 0";
+                            totalOrdersTextView.setText(totalOrder);
+                            String totalAmount = "Total amount : 0$";
+                            totalAmountTextView.setText(totalAmount);
+                            placeholderTextView.setVisibility(View.VISIBLE);
+                        }
+                        else
+                        {
+                            Toast.makeText(UserDetailsActivity.this, "No more orders left to display for this filtering.", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
 
@@ -333,13 +353,11 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
     {
         if(sortBy.equals("Status: Ongoing") || sortBy.equals("Status: Completed") || sortBy.equals("Status: Cancelled"))
         {
-            String status = sortBy.split(":")[1];
-            status = status.trim();
             if(nextKey.equals(""))
             {
-                return mainRef.orderByChild("status").equalTo(status).limitToFirst(BATCH_SIZE);
+                return mainRef.orderByKey().limitToFirst(BATCH_SIZE);
             }
-            return mainRef.orderByChild("status").equalTo(status).startAfter(status, nextKey).limitToFirst(BATCH_SIZE);
+            return mainRef.orderByKey().startAfter(nextKey).limitToFirst(BATCH_SIZE);
         }
         else
         {
@@ -398,6 +416,8 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
                 if(!sortBy.equals(item))
                 {
                     sortBy = item;
+                    String helper = sortBy.split(":")[1];
+                    status = helper.trim();
                     nextKey = "";
                     ordersList.clear();
                     ordersAdapter.notifyDataSetChanged();

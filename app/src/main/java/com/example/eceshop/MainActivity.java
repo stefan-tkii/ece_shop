@@ -145,7 +145,6 @@ public class MainActivity extends AppCompatActivity
                         }
                         else if(originFlag.equals("order_change"))
                         {
-                            Log.e("aa", order.getOrderId());
                             intent.putExtra(PRODUCT_KEY, order);
                         }
                         intent.putExtra(NAVIGATION_FLAG, originFlag);
@@ -198,7 +197,6 @@ public class MainActivity extends AppCompatActivity
                             }
                             else if(originFlag.equals("order_change"))
                             {
-                                Log.e("AA", order.getOrderId());
                                 intent.putExtra(PRODUCT_KEY, order);
                             }
                             intent.putExtra(NAVIGATION_FLAG, originFlag);
@@ -219,7 +217,6 @@ public class MainActivity extends AppCompatActivity
                             }
                             else if(originFlag.equals("order_change"))
                             {
-                                Log.e("AA", order.getOrderId());
                                 intent.putExtra(PRODUCT_KEY, order);
                             }
                             intent.putExtra(NAVIGATION_FLAG, originFlag);
