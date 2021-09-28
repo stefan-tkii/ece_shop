@@ -306,6 +306,7 @@ public class ProfileFragment extends Fragment
                }
            });
         }
+
         getOrdersInfo();
     }
 
@@ -329,7 +330,10 @@ public class ProfileFragment extends Fragment
                         if(o != null)
                         {
                             Order order = createOrder(snap.getKey(), o);
-                            total = total + order.calculateTotalPrice();
+                            if(!order.getStatus().equals("Cancelled"))
+                            {
+                                total = total + order.calculateTotalPrice();
+                            }
                         }
                     }
                     String ordersData = "Total orders: " + String.valueOf(count);

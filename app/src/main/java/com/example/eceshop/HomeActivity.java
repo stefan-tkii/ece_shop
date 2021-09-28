@@ -29,7 +29,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.login.LoginManager;
@@ -60,8 +59,9 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     private static final int POS_SETTINGS = 5;
     private static final int POS_LOGOUT = 7;
 
-    private static final int POS_ADD_PRODUCT = 6;
-    private static final int POS_USERS = 7;
+    private static final int POS_ADD_PRODUCT = 5;
+    private static final int POS_USERS = 6;
+    private static final int POS_ADMIN_SETTINGS = 7;
     private static final int POS_ADMIN_LOGOUT = 9;
 
     private static final String SELECT_OPTION = "com.example.eceshop.OPTION";
@@ -76,8 +76,8 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     private Product product;
     private Order order;
 
-    TextView textNotificationsItemCount;
-    int mNotificationsItemCount = 1;
+    // TextView textNotificationsItemCount;
+    // int mNotificationsItemCount = 1;
     private boolean admin;
 
     private boolean bundleStatus;
@@ -112,7 +112,6 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
 
         showCustomUI();
         mAuth = FirebaseAuth.getInstance();
-        Log.e("Home", "Inside on create of home activity.");
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
 
@@ -189,9 +188,9 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                     createItemFor(POS_CART),
                     createItemFor(POS_ORDERS),
                     createItemFor(POS_PROFILE),
-                    createItemFor(POS_SETTINGS),
                     createItemFor(POS_ADD_PRODUCT),
                     createItemFor(POS_USERS),
+                    createItemFor(POS_ADMIN_SETTINGS),
                     new SpaceItem(260),
                     createItemFor(POS_ADMIN_LOGOUT)
             ));
@@ -270,12 +269,12 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
+        /*
         final MenuItem menuItem = menu.findItem(R.id.action_notification);
         View actionView = menuItem.getActionView();
         textNotificationsItemCount = (TextView) actionView.findViewById(R.id.cart_badge);
 
         setupBadge();
-
         actionView.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -284,7 +283,7 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                 onOptionsItemSelected(menuItem);
             }
         });
-
+        */
         MenuItem.OnActionExpandListener onActionExpandListener = new MenuItem.OnActionExpandListener()
         {
             @Override
@@ -337,6 +336,14 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                     return true;
                 }
                 else if(selectedNavigation == POS_SETTINGS)
+                {
+                    bundle.putString("searchInput", "");
+                    bundleStatus = false;
+                    lastSearched = "";
+                    resetInput(searchView);
+                    return true;
+                }
+                else if(selectedNavigation == POS_ADMIN_SETTINGS)
                 {
                     bundle.putString("searchInput", "");
                     bundleStatus = false;
@@ -467,9 +474,9 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
     }
 
+    /*
     private void setupBadge()
     {
-        //get notifications and update the count of mNotificationsItemCount
         if (textNotificationsItemCount != null)
         {
             if (mNotificationsItemCount == 0)
@@ -487,8 +494,8 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                 }
             }
         }
-        //open drop down list of notifications
     }
+    */
 
     private boolean checkFocusRec(View view)
     {
@@ -539,6 +546,7 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item)
     {
+        /*
         switch (item.getItemId())
         {
             case R.id.action_notification:
@@ -546,6 +554,7 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                 setupBadge();
                 return true;
         }
+        */
         return super.onOptionsItemSelected(item);
     }
 
@@ -733,19 +742,6 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                 slidingRootNav.closeMenu();
             }
         }
-        else if(position == POS_SETTINGS)
-        {
-            if(selectedNavigation == POS_SETTINGS)
-            {
-
-                slidingRootNav.closeMenu();
-            }
-            else
-            {
-                selectedNavigation = POS_SETTINGS;
-                slidingRootNav.closeMenu();
-            }
-        }
         else if(position == POS_ADD_PRODUCT)
         {
             if(selectedNavigation == POS_ADD_PRODUCT)
@@ -773,6 +769,19 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
                 getSupportFragmentManager().beginTransaction()
                         .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
                         .replace(R.id.main_container, new UserManagementFragment()).commit();
+                slidingRootNav.closeMenu();
+            }
+        }
+        else if(position == POS_ADMIN_SETTINGS)
+        {
+            if(selectedNavigation == POS_ADMIN_SETTINGS)
+            {
+                slidingRootNav.closeMenu();
+            }
+            else
+            {
+                Toast.makeText(HomeActivity.this, "This view is not implemented yet.", Toast.LENGTH_SHORT).show();
+                // selectedNavigation = POS_ADMIN_SETTINGS;
                 slidingRootNav.closeMenu();
             }
         }
@@ -902,12 +911,12 @@ public class HomeActivity extends AppCompatActivity implements DrawerAdapter.OnI
         {
             if(selectedNavigation == POS_SETTINGS)
             {
-
                 slidingRootNav.closeMenu();
             }
             else
             {
-                selectedNavigation = POS_SETTINGS;
+                Toast.makeText(HomeActivity.this, "This view is not implemented yet.", Toast.LENGTH_SHORT).show();
+                // selectedNavigation = POS_SETTINGS;
                 slidingRootNav.closeMenu();
             }
         }

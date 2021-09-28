@@ -13,7 +13,7 @@
         xmlns:card_view="http://schemas.android.com/apk/res-auto"
         android:id="@+id/card_header"
         android:layout_width="match_parent"
-        card_view:strokeColor="@android:color/darker_gray"
+        card_view:strokeColor="#042382"
         card_view:strokeWidth="1dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -66,8 +66,9 @@
         android:layout_height="wrap_content"
         card_view:cardBackgroundColor="#FFFFFF"
         card_view:cardCornerRadius="10dp"
+        android:layout_marginTop="-5dp"
         card_view:cardElevation="5dp"
-        card_view:strokeColor="@android:color/darker_gray"
+        card_view:strokeColor="#042382"
         card_view:strokeWidth="1dp"
         card_view:cardUseCompatPadding="true">
 

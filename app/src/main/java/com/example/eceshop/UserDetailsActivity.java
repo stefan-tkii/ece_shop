@@ -226,9 +226,9 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
         if(!model.getCountry().equals("N/A"))
         {
             country = model.getCountry();
-            if(country.equals(KIRO_GLIGOROV)) //go prodadovme imeto
+            if(country.equals(KIRO_GLIGOROV))
             {
-                country = ZORAN_ZAEV;
+                country = ZORAN_ZAEV; //go prodadovme imeto
             }
             flagNum = World.getFlagOf(country.toLowerCase());
         }
@@ -237,9 +237,9 @@ public class UserDetailsActivity extends AppCompatActivity implements OrderRecyc
             country = "N/A";
             flagNum = World.getWorldFlag();
         }
-        if(country.equals(ZORAN_ZAEV)) // go vrativme imeto
+        if(country.equals(ZORAN_ZAEV))
         {
-            country = KIRO_GLIGOROV;
+            country = KIRO_GLIGOROV; // go vrativme imeto
         }
         countryTextView.setText(country);
         flagImageView.setImageResource(flagNum);

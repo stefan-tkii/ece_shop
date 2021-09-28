@@ -320,6 +320,8 @@
                     app:endIconDrawable="@drawable/ic_delete"
                     app:boxStrokeColor="#042382"
                     app:boxStrokeWidth="1dp"
+                    app:startIconDrawable="@drawable/ic_long_edit"
+                    app:startIconTint="@color/mainTextColor"
                     app:endIconTint="@color/mainTextColor"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
                     app:endIconMode="clear_text">

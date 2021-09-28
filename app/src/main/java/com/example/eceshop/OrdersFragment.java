@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -165,16 +164,13 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
                 {
                     if(!running)
                     {
-                        Log.e("aa", "Not running");
                         if(loadMore)
                         {
-                            Log.e("aa", "LOAD MOREE");
                             loadBar.setVisibility(View.VISIBLE);
                             getOrders();
                         }
                         else
                         {
-                            Log.e("aa", "DON'T LOAD MOREE");
                             backToTop.setVisibility(View.VISIBLE);
                         }
                     }
@@ -407,7 +403,6 @@ public class OrdersFragment extends Fragment implements OrderRecyclerViewAdapter
         }
         else
         {
-            Log.e("aa", status);
             Toast.makeText(getActivityNonNull(), "Cannot sort the orders in this way.", Toast.LENGTH_SHORT).show();
         }
     }

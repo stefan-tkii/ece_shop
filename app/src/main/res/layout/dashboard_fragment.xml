@@ -45,7 +45,7 @@
                 app:layout_constraintTop_toTopOf="@id/high_container"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="20dp"
                 android:textAlignment="textStart"
                 android:textColor="@color/black"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -95,8 +95,8 @@
                     android:id="@+id/product_TextView"
                     android:text="@string/products"
                     android:textStyle="bold"
+                    android:layout_gravity="bottom"
                     android:textSize="20sp"
-                    android:gravity="bottom"
                     android:textColor="@color/black"
                     android:layout_marginEnd="2dp"
                     android:layout_marginStart="10dp"/>
@@ -135,7 +135,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/middle_container"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="2dp"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"/>
 
@@ -164,6 +164,17 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:indeterminateDrawable="@drawable/dynamic_bar_style"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/noProductFoundPlaceholder"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:textSize="16sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@android:color/darker_gray"
+                    android:text="@string/no_products_have_been_found_for_this_search_filter"/>
 
             </LinearLayout>
 

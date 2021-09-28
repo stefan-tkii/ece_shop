@@ -29,9 +29,9 @@
         <item>Cart</item>
         <item>Orders</item>
         <item>Profile</item>
-        <item>Settings</item>
         <item>Add product</item>
         <item>User management</item>
+        <item>Settings</item>
         <item/>
         <item>Logout</item>
     </string-array>
@@ -42,9 +42,9 @@
         <item>@drawable/ic_cart</item>
         <item>@drawable/ic_orders</item>
         <item>@drawable/ic_profile</item>
-        <item>@drawable/ic_settings</item>
         <item>@drawable/ic_add_product</item>
         <item>@drawable/ic_users</item>
+        <item>@drawable/ic_settings</item>
         <item>0</item>
         <item>@drawable/ic_logout</item>
     </array>

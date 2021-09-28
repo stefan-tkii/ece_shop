@@ -101,7 +101,7 @@
                         android:layout_weight="1"
                         android:inputType="none"
                         android:maxLines="2"
-                        android:text="@string/latest"
+                        android:text="@string/newest"
                         android:textSize="13sp"
                         android:theme="@style/Autocomplete" />
 
@@ -117,7 +117,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/cart_top_layout"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="5dp"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"/>
 
@@ -132,7 +132,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginLeft="10dp"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="5dp"
                 android:layout_marginRight="10dp">
 
                 <androidx.recyclerview.widget.RecyclerView

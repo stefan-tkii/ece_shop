@@ -129,6 +129,8 @@
     <string name="this_user_has_no_orders_of_this_type">This user has no orders of this type.</string>
     <string name="status_ongoing">Status: Ongoing</string>
     <string name="set_completed">Set completed</string>
+    <string name="newest">Newest</string>
+    <string name="no_products_have_been_found_for_this_search_filter">No products have been found for this search filter.</string>
 
     <string-array name="categories">
         <item>All</item>

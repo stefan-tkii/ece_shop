@@ -8,7 +8,6 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -57,6 +57,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
     private NestedScrollView dashboardContainer;
     private ArrayAdapter<String> arrayAdapterSort;
     private AutoCompleteTextView productSorter;
+    private TextView placeholderTextView;
 
     private RecyclerView categoryRecyclerView;
     private CategoryRecyclerViewAdapter categoryAdapter;
@@ -84,6 +85,7 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
     private static final String ADMIN_KEY = "com.example.eceshop.Admin";
 
     private boolean running;
+    private boolean setVisible;
 
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
@@ -101,13 +103,12 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
 
         running = false;
 
-        Log.e("HU", "Inside onCreateView of DashboardFragment");
-
         dashboardContainer = root.findViewById(R.id.dashboard_container);
         productSorter = root.findViewById(R.id.sort_selector);
 
         backToTop = root.findViewById(R.id.backToTopFab);
         itemBar = root.findViewById(R.id.item_load_bar);
+        placeholderTextView = root.findViewById(R.id.noProductFoundPlaceholder);
 
         categoryTitles = loadCategoryTitles();
         categoryIcons = loadCategoryIcons();
@@ -144,6 +145,9 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
         productAdapter = new ProductRecyclerViewAdapter(getActivityNonNull(), productItems);
         productAdapter.setOnProductClickListener(this);
         productRecyclerView.setAdapter(productAdapter);
+
+        placeholderTextView.setVisibility(View.GONE);
+        setVisible = false;
 
         dashboardContainer.setOnTouchListener(new View.OnTouchListener()
         {
@@ -265,15 +269,23 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                 productSorter.clearFocus();
                 if(!sortBy.equals(item))
                 {
-                    sortBy = item;
-                    productItems.clear();
-                    productAdapter.notifyDataSetChanged();
-                    loadMore = true;
-                    itemBar.setVisibility(View.VISIBLE);
-                    nextPrice = 0.0d;
-                    nextOrders = -1;
-                    nextKey = null;
-                    getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
+                    if(setVisible)
+                    {
+                        sortBy = item;
+                        Toast.makeText(getActivityNonNull(), "Cannot sort an empty list of products.", Toast.LENGTH_SHORT).show();
+                    }
+                    else
+                    {
+                        sortBy = item;
+                        productItems.clear();
+                        productAdapter.notifyDataSetChanged();
+                        loadMore = true;
+                        itemBar.setVisibility(View.VISIBLE);
+                        nextPrice = 0.0d;
+                        nextOrders = -1;
+                        nextKey = null;
+                        getProducts(sortBy, nextKey, nextPrice, searchQuery, categorySort, nextOrders);
+                    }
                 }
                 else
                 {
@@ -311,7 +323,8 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
         {
             return super.getActivity();
         }
-        else {
+        else
+        {
             throw new RuntimeException("null returned from getActivity()");
         }
     }
@@ -347,6 +360,11 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
     {
         if(position == RecyclerView.NO_POSITION)
         {
+            if(setVisible)
+            {
+                placeholderTextView.setVisibility(View.GONE);
+                setVisible = false;
+            }
             categorySort = "";
             nextKey = null;
             nextPrice = 0.0d;
@@ -359,6 +377,11 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
         }
         else
         {
+            if(setVisible)
+            {
+                placeholderTextView.setVisibility(View.GONE);
+                setVisible = false;
+            }
             categorySort = data;
             nextKey = null;
             nextPrice = 0.0d;
@@ -473,8 +496,15 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             running = false;
                             itemBar.setVisibility(View.GONE);
                             loadMore = false;
-                            productAdapter.notifyDataSetChanged();
-                            Toast.makeText(getActivityNonNull(), "No more products left to display.", Toast.LENGTH_SHORT).show();
+                            if((!searchBy.equals("")) && (productItems.size() == 0))
+                            {
+                                placeholderTextView.setVisibility(View.VISIBLE);
+                                setVisible = true;
+                            }
+                            else
+                            {
+                                Toast.makeText(getActivityNonNull(), "No more products left to display for this filtering.", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
@@ -576,8 +606,15 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             running = false;
                             itemBar.setVisibility(View.GONE);
                             loadMore = false;
-                            productAdapter.notifyDataSetChanged();
-                            Toast.makeText(getActivityNonNull(), "No more products left to display.", Toast.LENGTH_SHORT).show();
+                            if((!searchBy.equals("")) && (productItems.size() == 0))
+                            {
+                                placeholderTextView.setVisibility(View.VISIBLE);
+                                setVisible = true;
+                            }
+                            else
+                            {
+                                Toast.makeText(getActivityNonNull(), "No more products left to display for this filtering.", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
@@ -670,8 +707,15 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             running = false;
                             itemBar.setVisibility(View.GONE);
                             loadMore = false;
-                            productAdapter.notifyDataSetChanged();
-                            Toast.makeText(getActivityNonNull(), "No more products left to display.", Toast.LENGTH_SHORT).show();
+                            if((!searchBy.equals("")) && (productItems.size() == 0))
+                            {
+                                placeholderTextView.setVisibility(View.VISIBLE);
+                                setVisible = true;
+                            }
+                            else
+                            {
+                                Toast.makeText(getActivityNonNull(), "No more products left to display for this filtering.", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
@@ -775,8 +819,15 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             running = false;
                             itemBar.setVisibility(View.GONE);
                             loadMore = false;
-                            productAdapter.notifyDataSetChanged();
-                            Toast.makeText(getActivityNonNull(), "No more products left to display.", Toast.LENGTH_SHORT).show();
+                            if((!searchBy.equals("")) && (productItems.size() == 0))
+                            {
+                                placeholderTextView.setVisibility(View.VISIBLE);
+                                setVisible = true;
+                            }
+                            else
+                            {
+                                Toast.makeText(getActivityNonNull(), "No more products left to display for this filtering.", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
@@ -880,8 +931,15 @@ public class DashboardFragment extends Fragment implements CategoryRecyclerViewA
                             running = false;
                             itemBar.setVisibility(View.GONE);
                             loadMore = false;
-                            productAdapter.notifyDataSetChanged();
-                            Toast.makeText(getActivityNonNull(), "No more products left to display.", Toast.LENGTH_SHORT).show();
+                            if((!searchBy.equals("")) && (productItems.size() == 0))
+                            {
+                                placeholderTextView.setVisibility(View.VISIBLE);
+                                setVisible = true;
+                            }
+                            else
+                            {
+                                Toast.makeText(getActivityNonNull(), "No more products left to display for this filtering.", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
