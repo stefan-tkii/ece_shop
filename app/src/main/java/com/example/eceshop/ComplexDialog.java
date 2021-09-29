@@ -42,6 +42,7 @@ public class ComplexDialog extends Dialog
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.complex_dialog_layout);
         getWindow().setBackgroundDrawableResource(R.drawable.dialog_bg);
         getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
